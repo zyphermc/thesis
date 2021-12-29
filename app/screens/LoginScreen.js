@@ -6,54 +6,73 @@ import {
 	View,
 	Image,
 	TextInput,
-	Button,
 	TouchableOpacity,
 	ImageBackground,
+	ScrollView,
 } from "react-native";
 
+import { useNavigation } from "@react-navigation/native";
+
 function LoginScreen(props) {
-	console.log("App Executed");
+	//console.log("App Executed");
 
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 
+	const navigation = useNavigation();
+
+	//Logic for pressing the Sign in button
+	const onSignInPressed = () => {
+		console.log("Sign In");
+		console.log(email);
+		console.log(password);
+
+		if (email === "tubol@gmail.com" && password === "igit") {
+			navigation.navigate("Test");
+		} else {
+			console.warn("Wrong account details!");
+		}
+	};
+
 	return (
-		<View style={styles.container}>
-			<ImageBackground
-				source={{ uri: "https://i.ibb.co/c6JhWvr/login-background.jpg" }}
-				resizeMode="cover"
-				style={styles.backgroundImage}
-			>
-				<Image
-					style={styles.image}
-					source={{ uri: "https://i.ibb.co/JrCV1wP/login-logo.jpg" }}
-					resizeMode="contain"
-				/>
-				<StatusBar style="auto" />
-				<View style={styles.inputView}>
-					<TextInput
-						style={styles.TextInput}
-						placeholder="Email."
-						placeholderTextColor="#003f5c"
-						onChangeText={(email) => setEmail(email)}
+		<ScrollView contentContainerStyle={{ flex: 1 }}>
+			<View style={styles.container}>
+				<ImageBackground
+					source={{ uri: "https://i.ibb.co/c6JhWvr/login-background.jpg" }}
+					resizeMode="cover"
+					style={styles.backgroundImage}
+				>
+					<Image
+						style={styles.image}
+						source={{ uri: "https://i.ibb.co/JrCV1wP/login-logo.jpg" }}
+						resizeMode="contain"
 					/>
-				</View>
+					<StatusBar style="auto" />
+					<View style={styles.inputView}>
+						<TextInput
+							style={styles.TextInput}
+							placeholder="Email."
+							placeholderTextColor="#003f5c"
+							onChangeText={(email) => setEmail(email)}
+						/>
+					</View>
 
-				<View style={styles.inputView}>
-					<TextInput
-						style={styles.TextInput}
-						placeholder="Password."
-						placeholderTextColor="#003f5c"
-						secureTextEntry={true}
-						onChangeText={(password) => setPassword(password)}
-					/>
-				</View>
+					<View style={styles.inputView}>
+						<TextInput
+							style={styles.TextInput}
+							placeholder="Password."
+							placeholderTextColor="#003f5c"
+							secureTextEntry={true}
+							onChangeText={(password) => setPassword(password)}
+						/>
+					</View>
 
-				<TouchableOpacity style={styles.loginBtn}>
-					<Text style={styles.loginText}>LOGIN</Text>
-				</TouchableOpacity>
-			</ImageBackground>
-		</View>
+					<TouchableOpacity onPress={onSignInPressed} style={styles.loginBtn}>
+						<Text style={styles.loginText}>LOGIN</Text>
+					</TouchableOpacity>
+				</ImageBackground>
+			</View>
+		</ScrollView>
 	);
 }
 
@@ -79,8 +98,10 @@ const styles = StyleSheet.create({
 	},
 
 	inputView: {
-		backgroundColor: "#FFC0CB",
+		backgroundColor: "#FFA775",
 		borderRadius: 30,
+		borderColor: "#000",
+		borderWidth: 1,
 		width: "70%",
 		height: 45,
 		marginBottom: 20,
@@ -94,19 +115,16 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 	},
 
-	forgot_button: {
-		height: 30,
-		marginBottom: 30,
-	},
-
 	loginBtn: {
 		width: "80%",
 		borderRadius: 25,
+		borderColor: "#000",
+		borderWidth: 1,
 		height: 50,
 		alignItems: "center",
 		justifyContent: "center",
 		marginTop: 40,
-		backgroundColor: "#FF1493",
+		backgroundColor: "#FF6123",
 	},
 });
 
