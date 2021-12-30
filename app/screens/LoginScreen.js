@@ -10,29 +10,58 @@ import {
 	ImageBackground,
 	ScrollView,
 } from "react-native";
-
 import { useNavigation } from "@react-navigation/native";
+import {
+	createUserWithEmailAndPassword,
+	signInWithEmailAndPassword,
+	signOut,
+} from "firebase/auth";
+
+import { authentication } from "../../firebase-config";
 
 function LoginScreen(props) {
 	//console.log("App Executed");
 
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [isSignedIn, setIsSignedIn] = useState(false);
+
+	const handleSignUp = () => {
+		createUserWithEmailAndPassword(authentication, email, password)
+			.then((re) => {
+				console.log(re);
+			})
+			.catch((er) => {
+				console.log(er);
+			});
+	};
+
+	const handleSignIn = () => {
+		signInWithEmailAndPassword(authentication, email, password)
+			.then((re) => {
+				console.log(re);
+				setIsSignedIn(true);
+				console.log(isSignedIn);
+				navigation.navigate("Test");
+			})
+			.catch((err) => {
+				console.log(err);
+				console.warn("Wrong account details!");
+			});
+	};
+
+	const handleSignOut = () => {
+		signOut(authentication)
+			.then((re) => {
+				setIsSignedIn(false);
+				console.log(isSignedIn);
+			})
+			.catch((err) => {
+				console.log(err);
+			});
+	};
 
 	const navigation = useNavigation();
-
-	//Logic for pressing the Sign in button
-	const onSignInPressed = () => {
-		console.log("Sign In");
-		console.log(email);
-		console.log(password);
-
-		if (email === "tubol@gmail.com" && password === "igit") {
-			navigation.navigate("Test");
-		} else {
-			console.warn("Wrong account details!");
-		}
-	};
 
 	return (
 		<ScrollView contentContainerStyle={{ flex: 1 }}>
@@ -66,8 +95,7 @@ function LoginScreen(props) {
 							onChangeText={(password) => setPassword(password)}
 						/>
 					</View>
-
-					<TouchableOpacity onPress={onSignInPressed} style={styles.loginBtn}>
+					<TouchableOpacity onPress={handleSignIn} style={styles.loginBtn}>
 						<Text style={styles.loginText}>LOGIN</Text>
 					</TouchableOpacity>
 				</ImageBackground>
@@ -125,6 +153,17 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		marginTop: 40,
 		backgroundColor: "#FF6123",
+	},
+	logoutBtn: {
+		width: "80%",
+		borderRadius: 25,
+		borderColor: "#000",
+		borderWidth: 1,
+		height: 50,
+		alignItems: "center",
+		justifyContent: "center",
+		marginTop: 40,
+		backgroundColor: "red",
 	},
 });
 
