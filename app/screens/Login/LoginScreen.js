@@ -8,20 +8,19 @@ import {
 	TextInput,
 	TouchableOpacity,
 	ImageBackground,
-	ScrollView,
 } from "react-native";
+
 import { useNavigation } from "@react-navigation/native";
+
 import {
 	createUserWithEmailAndPassword,
 	signInWithEmailAndPassword,
 	signOut,
 } from "firebase/auth";
 
-import { authentication } from "../../firebase-config";
+import { authentication } from "../../../firebase-config";
 
-function LoginScreen(props) {
-	//console.log("App Executed");
-
+function LoginScreen() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [isSignedIn, setIsSignedIn] = useState(false);
@@ -31,8 +30,8 @@ function LoginScreen(props) {
 			.then((re) => {
 				console.log(re);
 			})
-			.catch((er) => {
-				console.log(er);
+			.catch((err) => {
+				console.log(err);
 			});
 	};
 
@@ -40,9 +39,8 @@ function LoginScreen(props) {
 		signInWithEmailAndPassword(authentication, email, password)
 			.then((re) => {
 				console.log(re);
+
 				setIsSignedIn(true);
-				console.log(isSignedIn);
-				navigation.navigate("Test");
 			})
 			.catch((err) => {
 				console.log(err);
@@ -53,7 +51,10 @@ function LoginScreen(props) {
 	const handleSignOut = () => {
 		signOut(authentication)
 			.then((re) => {
+				console.log(re);
+
 				setIsSignedIn(false);
+
 				console.log(isSignedIn);
 			})
 			.catch((err) => {
@@ -61,46 +62,77 @@ function LoginScreen(props) {
 			});
 	};
 
+	const handleContinue = () => {
+		navigation.navigate("Test", {
+			email: email,
+		});
+	};
+
 	const navigation = useNavigation();
 
 	return (
-		<ScrollView contentContainerStyle={{ flex: 1 }}>
-			<View style={styles.container}>
-				<ImageBackground
-					source={{ uri: "https://i.ibb.co/c6JhWvr/login-background.jpg" }}
-					resizeMode="cover"
-					style={styles.backgroundImage}
-				>
-					<Image
-						style={styles.image}
-						source={{ uri: "https://i.ibb.co/JrCV1wP/login-logo.jpg" }}
-						resizeMode="contain"
-					/>
-					<StatusBar style="auto" />
+		<View style={styles.container}>
+			<ImageBackground
+				source={{ uri: "https://i.ibb.co/c6JhWvr/login-background.jpg" }}
+				resizeMode="cover"
+				style={styles.backgroundImage}
+			>
+				<Image
+					style={styles.image}
+					source={{ uri: "https://i.ibb.co/JrCV1wP/login-logo.jpg" }}
+					resizeMode="contain"
+				/>
+				<StatusBar style="auto" />
+
+				{isSignedIn ? (
+					<View style={styles.inputView}>
+						<Text style={{ marginTop: 10 }}>Signed is as {email}</Text>
+					</View>
+				) : (
 					<View style={styles.inputView}>
 						<TextInput
 							style={styles.TextInput}
 							placeholder="Email."
 							placeholderTextColor="#003f5c"
-							onChangeText={(email) => setEmail(email)}
+							value={email}
+							onChangeText={(text) => setEmail(text)}
 						/>
 					</View>
+				)}
 
+				{isSignedIn ? (
+					<></>
+				) : (
 					<View style={styles.inputView}>
 						<TextInput
 							style={styles.TextInput}
 							placeholder="Password."
 							placeholderTextColor="#003f5c"
 							secureTextEntry={true}
-							onChangeText={(password) => setPassword(password)}
+							value={password}
+							onChangeText={(text) => setPassword(text)}
 						/>
 					</View>
-					<TouchableOpacity onPress={handleSignIn} style={styles.loginBtn}>
-						<Text style={styles.loginText}>LOGIN</Text>
+				)}
+
+				{isSignedIn ? (
+					<TouchableOpacity style={styles.continueBtn} onPress={handleContinue}>
+						<Text style={styles.loginText}>CONTINUE</Text>
 					</TouchableOpacity>
-				</ImageBackground>
-			</View>
-		</ScrollView>
+				) : (
+					<></>
+				)}
+
+				<TouchableOpacity
+					style={isSignedIn ? styles.logoutBtn : styles.loginBtn}
+					onPress={isSignedIn ? handleSignOut : handleSignIn}
+				>
+					<Text style={styles.loginText}>
+						{isSignedIn ? "LOGOUT" : "LOGIN"}
+					</Text>
+				</TouchableOpacity>
+			</ImageBackground>
+		</View>
 	);
 }
 
@@ -136,6 +168,18 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 
+	inputView2: {
+		backgroundColor: "#FFA775",
+		borderRadius: 30,
+		borderColor: "#000",
+		borderWidth: 1,
+		width: "70%",
+		height: 45,
+		marginTop: 20,
+		marginBottom: 20,
+		alignItems: "center",
+	},
+
 	TextInput: {
 		height: 50,
 		flex: 1,
@@ -162,8 +206,19 @@ const styles = StyleSheet.create({
 		height: 50,
 		alignItems: "center",
 		justifyContent: "center",
-		marginTop: 40,
+		marginTop: 20,
 		backgroundColor: "red",
+	},
+	continueBtn: {
+		width: "80%",
+		borderRadius: 25,
+		borderColor: "#000",
+		borderWidth: 1,
+		height: 50,
+		alignItems: "center",
+		justifyContent: "center",
+		marginTop: 40,
+		backgroundColor: "green",
 	},
 });
 

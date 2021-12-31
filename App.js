@@ -1,12 +1,16 @@
-import { View, Text, SafeAreaView, StyleSheet } from "react-native";
+import { SafeAreaView, StyleSheet, LogBox } from "react-native";
 
-import Navigation from "./app/navigation/navigation";
+import Navigation from "./app/navigation/Navigation";
 
 export default function App() {
+	LogBox.ignoreLogs([
+		"AsyncStorage has been extracted from react-native core and will be removed in a future release.",
+	]);
+
 	return (
-		<View style={styles.container}>
+		<SafeAreaView style={styles.container}>
 			<Navigation />
-		</View>
+		</SafeAreaView>
 	);
 }
 

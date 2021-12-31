@@ -1,8 +1,9 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { hidden_apiKey } from "./server_config";
 
 const firebaseConfig = {
-	apiKey: "AIzaSyDb5VgG1C4Ko3fLaEM_IkUMwth4eBGU4UY",
+	apiKey: hidden_apiKey,
 	authDomain: "thesis-39d63.firebaseapp.com",
 	projectId: "thesis-39d63",
 	storageBucket: "thesis-39d63.appspot.com",
@@ -13,4 +14,5 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+console.log(getAuth(app).currentUser);
 export const authentication = getAuth(app);
