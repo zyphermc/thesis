@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { hidden_apiKey } from "./server_config";
+import { getFirestore } from "firebase/firestore/lite";
 
 const firebaseConfig = {
 	apiKey: hidden_apiKey,
@@ -14,5 +15,5 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-console.log(getAuth(app).currentUser);
 export const authentication = getAuth(app);
+export const db = getFirestore(app);

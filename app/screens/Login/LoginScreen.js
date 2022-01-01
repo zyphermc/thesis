@@ -19,11 +19,13 @@ import {
 } from "firebase/auth";
 
 import { authentication } from "../../../firebase-config";
+import { adminList } from "../Login/AdminList";
 
 function LoginScreen() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [isSignedIn, setIsSignedIn] = useState(false);
+	const [isAdmin, setIsAdmin] = useState(false);
 
 	const handleSignUp = () => {
 		createUserWithEmailAndPassword(authentication, email, password)
@@ -46,6 +48,13 @@ function LoginScreen() {
 				console.log(err);
 				console.warn("Wrong account details!");
 			});
+
+		//Check if email is admin
+		if (adminList.includes(email) && !isAdmin) {
+			setIsAdmin(true);
+		} else {
+			setIsAdmin(false);
+		}
 	};
 
 	const handleSignOut = () => {
@@ -54,8 +63,6 @@ function LoginScreen() {
 				console.log(re);
 
 				setIsSignedIn(false);
-
-				console.log(isSignedIn);
 			})
 			.catch((err) => {
 				console.log(err);
@@ -63,8 +70,8 @@ function LoginScreen() {
 	};
 
 	const handleContinue = () => {
-		navigation.navigate("Test", {
-			email: email,
+		navigation.navigate("Home", {
+			isAdmin: isAdmin,
 		});
 	};
 
