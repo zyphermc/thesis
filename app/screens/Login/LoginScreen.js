@@ -70,7 +70,7 @@ function LoginScreen() {
 	};
 
 	const handleContinue = () => {
-		navigation.navigate("Home", {
+		navigation.navigate("Drawer", {
 			isAdmin: isAdmin,
 		});
 	};

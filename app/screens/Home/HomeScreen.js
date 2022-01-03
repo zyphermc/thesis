@@ -1,10 +1,8 @@
 import { React } from "react";
 import { Text, View, StyleSheet, Button } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 
-function HomeScreen({ route }) {
+function HomeScreen({ navigation, route }) {
 	const isAdmin = route.params.isAdmin;
-	const navigation = useNavigation();
 
 	const handleInventoryNav = () => {
 		navigation.navigate("Inventory", {

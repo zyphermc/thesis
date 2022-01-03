@@ -13,7 +13,7 @@ import {
 
 import { db } from "../../../firebase-config";
 
-function InventoryScreen({ route }) {
+function InventoryScreen({ navigation, route }) {
 	const isAdmin = route.params.isAdmin;
 
 	const SetData = async () => {
