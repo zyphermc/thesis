@@ -15,7 +15,7 @@ import {
 import { db } from "../../../firebase-config";
 
 function InventoryScreen({ navigation, route }) {
-	const [isAdmin, setIsAdmin] = useState(route.params.isAdmin);
+	const [isAdmin] = useState(route.params.isAdmin);
 
 	const SetData = async () => {
 		// Add a new document in collection "products"
