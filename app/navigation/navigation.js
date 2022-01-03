@@ -20,7 +20,10 @@ const Stack = createNativeStackNavigator();
 function StackNavigation(props) {
 	return (
 		<NavigationContainer>
-			<Stack.Navigator screenOptions={{ headerShown: false }}>
+			<Stack.Navigator
+				screenOptions={{ headerShown: false }}
+				initialRouteName="Login"
+			>
 				<Stack.Screen name={"Login"} component={LoginScreen} />
 				<Stack.Screen name={"Drawer"} component={DrawerNavigation} />
 			</Stack.Navigator>
@@ -30,15 +33,18 @@ function StackNavigation(props) {
 
 const Drawer = createDrawerNavigator();
 
-function DrawerNavigation({ route }) {
-	const params = route.params;
+function DrawerNavigation(props) {
+	const { isAdmin } = props.route.params;
 
 	return (
-		<Drawer.Navigator drawerContent={(props) => <CustomDrawer {...props} />}>
+		<Drawer.Navigator
+			drawerContent={(props) => <CustomDrawer {...props} />}
+			initialRouteName="Home"
+		>
 			<Drawer.Screen
 				name="Home"
 				component={HomeScreen}
-				initialParams={{ isAdmin: params.isAdmin }}
+				initialParams={{ isAdmin: isAdmin }}
 				options={{
 					drawerIcon: (color) => (
 						<Ionicons name="home-outline" size={22} color={color} />
@@ -48,18 +54,18 @@ function DrawerNavigation({ route }) {
 			<Drawer.Screen
 				name="Inventory"
 				component={InventoryScreen}
-				initialParams={{ isAdmin: params.isAdmin }}
+				initialParams={{ isAdmin: isAdmin }}
 				options={{
 					drawerIcon: (color) => (
 						<Ionicons name="server-outline" size={22} color={color} />
 					),
 				}}
 			/>
-			{params.isAdmin ? (
+			{isAdmin ? (
 				<Drawer.Screen
 					name="Orders"
 					component={OrderScreen}
-					initialParams={{ isAdmin: params.isAdmin }}
+					initialParams={{ isAdmin: isAdmin }}
 					options={{
 						drawerIcon: (color) => (
 							<Ionicons name="fast-food-outline" size={22} color={color} />

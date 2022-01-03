@@ -14,7 +14,7 @@ import {
 import { db } from "../../../firebase-config";
 
 function InventoryScreen({ navigation, route }) {
-	const isAdmin = route.params.isAdmin;
+	const { isAdmin } = route.params;
 
 	const SetData = async () => {
 		// Add a new document in collection "products"
@@ -50,12 +50,20 @@ function InventoryScreen({ navigation, route }) {
 		console.log(productsSnapshot.docs.map((doc) => doc.data()));
 	};
 
+	//Test GetData
+	const TestGetData = async () => {
+		const usersCol = collection(db, "emails");
+		const usersSnapshot = await getDocs(usersCol);
+
+		console.log(usersSnapshot.docs.map((doc) => doc.data()));
+	};
+
 	return (
 		<SafeAreaView style={styles.container}>
 			<Text style={{ alignSelf: "center" }}>
 				My Inventory: {isAdmin ? "is admin" : "is not admin"}
 			</Text>
-			<Button style={styles.btn} title={"Set Data"} onPress={SetData} />
+			<Button style={styles.btn} title={"Get Data"} onPress={TestGetData} />
 		</SafeAreaView>
 	);
 }
