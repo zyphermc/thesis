@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
 	DrawerContentScrollView,
 	DrawerItemList,
@@ -9,9 +9,26 @@ import { Image, ImageBackground, Text, View } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { Directions } from "react-native-gesture-handler";
 
+//Firestore Database
+import { getDoc, doc } from "firebase/firestore/lite";
+import { db, authentication } from "../../firebase-config";
+
 function CustomDrawer(props) {
-	const user = "Richard Redito";
-	const isAdmin = true;
+	const [userData, setUserData] = useState([]);
+	const email = authentication.currentUser.email;
+
+	useEffect(() => {
+		const GetUserData = async (email) => {
+			const emailDocSnap = await getDoc(doc(db, "emails", email));
+
+			setUserData(emailDocSnap.data());
+		};
+
+		GetUserData(email);
+	}, []);
+
+	const user = userData.name;
+	const isAdmin = userData.isAdmin;
 
 	return (
 		<View style={{ flex: 1 }}>

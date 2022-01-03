@@ -12,13 +12,10 @@ import {
 
 import { useNavigation } from "@react-navigation/native";
 
-import {
-	createUserWithEmailAndPassword,
-	signInWithEmailAndPassword,
-	signOut,
-} from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { doc, updateDoc } from "firebase/firestore/lite";
 
-import { authentication } from "../../../firebase-config";
+import { authentication, db } from "../../../firebase-config";
 import { adminList } from "../Login/AdminList";
 
 function LoginScreen() {
@@ -27,21 +24,12 @@ function LoginScreen() {
 	const [isSignedIn, setIsSignedIn] = useState(false);
 	const [isAdmin, setIsAdmin] = useState(false);
 
-	const handleSignUp = () => {
-		createUserWithEmailAndPassword(authentication, email, password)
-			.then((re) => {
-				console.log(re);
-			})
-			.catch((err) => {
-				console.log(err);
-			});
-	};
-
 	const handleSignIn = () => {
 		signInWithEmailAndPassword(authentication, email, password)
 			.then((re) => {
 				console.log(re);
 
+				UpdateSignIn(true);
 				setIsSignedIn(true);
 			})
 			.catch((err) => {
@@ -62,6 +50,7 @@ function LoginScreen() {
 			.then((re) => {
 				console.log(re);
 
+				UpdateSignIn(false);
 				setIsSignedIn(false);
 			})
 			.catch((err) => {
@@ -72,6 +61,15 @@ function LoginScreen() {
 	const handleContinue = () => {
 		navigation.navigate("Drawer", {
 			isAdmin: isAdmin,
+		});
+	};
+
+	const UpdateSignIn = async (bool) => {
+		const emailDocRef = doc(db, "emails", email.toLowerCase());
+
+		//Update an existing document in collection
+		await updateDoc(emailDocRef, {
+			signedIn: bool,
 		});
 	};
 

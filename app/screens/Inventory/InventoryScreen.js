@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Text, StyleSheet, Button } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import {
 	collection,
 	getDocs,
+	getDoc,
 	doc,
 	setDoc,
 	updateDoc,
@@ -14,7 +15,7 @@ import {
 import { db } from "../../../firebase-config";
 
 function InventoryScreen({ navigation, route }) {
-	const { isAdmin } = route.params;
+	const [isAdmin, setIsAdmin] = useState(route.params.isAdmin);
 
 	const SetData = async () => {
 		// Add a new document in collection "products"
@@ -47,15 +48,20 @@ function InventoryScreen({ navigation, route }) {
 		const productsCol = collection(db, "products");
 		const productsSnapshot = await getDocs(productsCol);
 
-		console.log(productsSnapshot.docs.map((doc) => doc.data()));
+		//const products = productsSnapshot.docs.map((doc) => doc.data());
+		productsSnapshot.forEach((doc) => {
+			console.log(doc.get("product_name"));
+			console.log(doc.get("product_quantity"));
+		});
+		//console.log(products);
 	};
 
-	//Test GetData
+	//Test Get Specific Data
 	const TestGetData = async () => {
-		const usersCol = collection(db, "emails");
+		const usersCol = collection(db, "products");
 		const usersSnapshot = await getDocs(usersCol);
 
-		console.log(usersSnapshot.docs.map((doc) => doc.data()));
+		//console.log(usersSnapshot);
 	};
 
 	return (
@@ -63,7 +69,7 @@ function InventoryScreen({ navigation, route }) {
 			<Text style={{ alignSelf: "center" }}>
 				My Inventory: {isAdmin ? "is admin" : "is not admin"}
 			</Text>
-			<Button style={styles.btn} title={"Get Data"} onPress={TestGetData} />
+			<Button style={styles.btn} title={"Get Data"} onPress={GetData} />
 		</SafeAreaView>
 	);
 }

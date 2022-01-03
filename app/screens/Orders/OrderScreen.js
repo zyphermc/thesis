@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Text } from "react-native";
 
 function OrderScreen({ navigation, route }) {
-	const { isAdmin } = route.params;
+	const [isAdmin, setIsAdmin] = useState(route.params.isAdmin);
 
 	return (
 		<Text style={{ justifyContent: "center", alignSelf: "center" }}>
