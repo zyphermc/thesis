@@ -63,7 +63,7 @@ function DrawerNavigation(props) {
 			/>
 			{isAdmin ? (
 				<Drawer.Screen
-					name="Orders"
+					name="Point of Sale"
 					component={OrderScreen}
 					initialParams={{ isAdmin: isAdmin }}
 					options={{
