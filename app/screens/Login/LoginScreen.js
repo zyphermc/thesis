@@ -13,7 +13,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { doc, updateDoc } from "firebase/firestore/lite";
+import { doc, updateDoc } from "firebase/firestore";
 
 import { authentication, db } from "../../../firebase-config";
 import { adminList } from "../Login/AdminList";

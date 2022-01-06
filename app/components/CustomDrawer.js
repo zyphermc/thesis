@@ -10,7 +10,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { Directions } from "react-native-gesture-handler";
 
 //Firestore Database
-import { getDoc, doc } from "firebase/firestore/lite";
+import { getDoc, doc } from "firebase/firestore";
 import { db, authentication } from "../../firebase-config";
 
 function CustomDrawer(props) {

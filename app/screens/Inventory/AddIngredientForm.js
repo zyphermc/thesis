@@ -8,7 +8,7 @@ import {
 	TouchableOpacity,
 } from "react-native";
 import { Formik } from "formik";
-import { doc, setDoc } from "firebase/firestore/lite";
+import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../../firebase-config";
 
 function AddIngredientForm(props) {

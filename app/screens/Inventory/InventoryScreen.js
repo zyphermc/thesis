@@ -9,15 +9,7 @@ import {
 	Modal,
 } from "react-native";
 
-import {
-	collection,
-	getDocs,
-	getDoc,
-	doc,
-	setDoc,
-	updateDoc,
-	deleteDoc,
-} from "firebase/firestore/lite";
+import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
