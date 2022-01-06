@@ -34,6 +34,8 @@ function InventoryScreen({ route }) {
 	const [products, SetProducts] = useState([]);
 	const [modalOpen, SetModalOpen] = useState(false);
 
+	let child_id = 1;
+
 	function getImageIndex(imgName) {
 		return ingredientImageArr.findIndex((obj) => obj.name === imgName);
 	}
@@ -123,7 +125,7 @@ function InventoryScreen({ route }) {
 					{ingredients.map((ingredient) => {
 						return (
 							<View
-								key={ingredient.id}
+								key={++child_id}
 								style={{
 									width: "100%",
 									height: 130,
@@ -134,6 +136,7 @@ function InventoryScreen({ route }) {
 								}}
 							>
 								<View
+									key={++child_id}
 									style={{
 										flexDirection: "row",
 										justifyContent: "flex-start",
@@ -141,6 +144,7 @@ function InventoryScreen({ route }) {
 									}}
 								>
 									<Image
+										key={++child_id}
 										source={{ uri: ingredient.imageURI }}
 										style={{
 											width: 100,
@@ -148,25 +152,29 @@ function InventoryScreen({ route }) {
 										}}
 									/>
 									<View
+										key={++child_id}
 										style={{
 											marginLeft: 10,
 										}}
 									>
-										<Text style={{ fontWeight: "bold" }}>
+										<Text key={++child_id} style={{ fontWeight: "bold" }}>
 											Name: {ingredient.ingredient_name}
 										</Text>
-										<Text>Category: {ingredient.ingredient_category}</Text>
-										<Text>
+										<Text key={++child_id}>
+											Category: {ingredient.ingredient_category}
+										</Text>
+										<Text key={++child_id}>
 											Quantity: {ingredient.ingredient_stock}{" "}
 											{ingredient.unit_of_measurement}
 										</Text>
-										<Text>
+										<Text key={++child_id}>
 											Stock Level: <Text style={{ color: "green" }}>GOOD</Text>
 										</Text>
 									</View>
 								</View>
 
 								<View
+									key={++child_id}
 									style={{
 										position: "absolute",
 										top: 10,
@@ -174,22 +182,30 @@ function InventoryScreen({ route }) {
 									}}
 								>
 									<TouchableOpacity
+										key={++child_id}
 										style={styles.buttonInside}
 										onPress={handleButtonView}
 									>
 										<Ionicons
+											key={++child_id}
 											name="clipboard-outline"
 											size={22}
 											color={"white"}
 										/>
 									</TouchableOpacity>
 									<TouchableOpacity
+										key={++child_id}
 										style={[styles.buttonInside, { backgroundColor: "red" }]}
 										onPress={() => {
 											handleButtonDelete(ingredient.ingredient_name);
 										}}
 									>
-										<Ionicons name="trash-outline" size={22} color={"white"} />
+										<Ionicons
+											key={++child_id}
+											name="trash-outline"
+											size={22}
+											color={"white"}
+										/>
 									</TouchableOpacity>
 								</View>
 							</View>

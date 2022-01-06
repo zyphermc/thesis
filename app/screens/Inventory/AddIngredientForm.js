@@ -69,16 +69,16 @@ function AddIngredientForm(props) {
 						/>
 						<TextInput
 							style={styles.input}
+							placeholder="Unit of Measurement"
+							onChangeText={props.handleChange("unitOfMeasurement")}
+							value={props.values.unitOfMeasurement}
+						/>
+						<TextInput
+							style={styles.input}
 							placeholder="Price"
 							onChangeText={props.handleChange("price")}
 							value={props.values.price}
 							keyboardType="numeric"
-						/>
-						<TextInput
-							style={styles.input}
-							placeholder="Unit of Measurement"
-							onChangeText={props.handleChange("unitOfMeasurement")}
-							value={props.values.unitOfMeasurement}
 						/>
 						<TextInput
 							style={styles.input}
