@@ -9,7 +9,13 @@ import {
 	Modal,
 } from "react-native";
 
-import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
+import {
+	collection,
+	getDocs,
+	doc,
+	deleteDoc,
+	onSnapshot,
+} from "firebase/firestore";
 
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -39,21 +45,30 @@ function InventoryScreen({ route }) {
 	useEffect(() => {
 		//Get Ingredients from Firestore
 		const getIngredients = async () => {
-			const ingredientsData = await getDocs(ingredientsCollectionRef);
+			const unsub = onSnapshot(ingredientsCollectionRef, (docsSnapshot) => {
+				const myIngredients = [];
 
-			SetIngredients(
-				ingredientsData.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
-			);
+				docsSnapshot.forEach((doc) => {
+					myIngredients.push(doc.data());
+				});
+
+				SetIngredients(myIngredients);
+			});
 		};
 
 		getIngredients();
 
 		//Get Products from Firestore
 		const getProducts = async () => {
-			const productsData = await getDocs(productsCollectionRef);
-			SetProducts(
-				productsData.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
-			);
+			const unsub = onSnapshot(productsCollectionRef, (docsSnapshot) => {
+				const myProducts = [];
+
+				docsSnapshot.forEach((doc) => {
+					myProducts.push(doc.data());
+				});
+
+				SetProducts(myProducts);
+			});
 		};
 
 		getProducts();
@@ -126,7 +141,7 @@ function InventoryScreen({ route }) {
 									}}
 								>
 									<Image
-										source={ingredientImageArr[getImageIndex("Garlic")].image}
+										source={{ uri: ingredient.imageURI }}
 										style={{
 											width: 100,
 											height: 100,

@@ -18,6 +18,7 @@ function AddIngredientForm(props) {
 		quantity: "",
 		price: "",
 		unitOfMeasurement: "",
+		imageURI: "",
 	};
 
 	const AddToFirestore = async (data) => {
@@ -29,6 +30,7 @@ function AddIngredientForm(props) {
 				ingredient_stock: data.quantity,
 				ingredient_unitPrice_avg: data.price,
 				unit_of_measurement: data.unitOfMeasurement,
+				imageURI: data.imageURI,
 			},
 			{ merge: true }
 		);
@@ -77,6 +79,12 @@ function AddIngredientForm(props) {
 							placeholder="Unit of Measurement"
 							onChangeText={props.handleChange("unitOfMeasurement")}
 							value={props.values.unitOfMeasurement}
+						/>
+						<TextInput
+							style={styles.input}
+							placeholder="Image Link"
+							onChangeText={props.handleChange("imageURI")}
+							value={props.values.imageURI}
 						/>
 
 						<TouchableOpacity

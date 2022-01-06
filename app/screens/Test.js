@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { LogBox, ScrollView, Text, View } from "react-native";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, onSnapshot, doc } from "firebase/firestore";
 import { db } from "../../firebase-config";
 
 function Test(props) {
@@ -16,31 +16,25 @@ function Test(props) {
 	useEffect(() => {
 		//Get Ingredients from Firestore
 		const getIngredients = async () => {
-			const ingredientsData = await getDocs(ingredientsCollectionRef);
+			const unsub = onSnapshot(ingredientsCollectionRef, (docsSnapshot) => {
+				const myIngredients = [];
 
-			SetIngredients(
-				ingredientsData.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
-			);
+				docsSnapshot.forEach((doc) => {
+					myIngredients.push(doc.data());
+				});
+
+				SetIngredients(myIngredients);
+			});
 		};
 
 		getIngredients();
-
-		//Get Products from Firestore
-		const getProducts = async () => {
-			const productsData = await getDocs(productsCollectionRef);
-			SetProducts(
-				productsData.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
-			);
-		};
-
-		getProducts();
 	}, []);
 
 	return (
 		<ScrollView>
 			{ingredients.map((ingredient) => {
 				return (
-					<View style={{ paddingBottom: 100 }}>
+					<View style={{ paddingBottom: 100 }} key={ingredient.ingredient_name}>
 						<Text>Name: {ingredient.ingredient_name}</Text>
 						<Text>Category: {ingredient.ingredient_category}</Text>
 					</View>
