@@ -1,5 +1,5 @@
-import { React, useState, useEffect } from "react";
-import { Text, View, StyleSheet, Button } from "react-native";
+import { React, useState } from "react";
+import { Text, View, StyleSheet } from "react-native";
 
 function HomeScreen({ navigation, route }) {
 	const [isAdmin] = useState(route.params.isAdmin);
@@ -12,8 +12,7 @@ function HomeScreen({ navigation, route }) {
 
 	return (
 		<View style={styles.container}>
-			<Text>{isAdmin ? "Is Admin" : "Not Admin"}</Text>
-			<Button title="My Inventory" onPress={handleInventoryNav} />
+			<Text>Home</Text>
 		</View>
 	);
 }
@@ -21,6 +20,7 @@ function HomeScreen({ navigation, route }) {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
+		alignItems: "center",
 	},
 });
 

@@ -2,13 +2,13 @@ import React, { useState, useEffect } from "react";
 import {
 	Text,
 	StyleSheet,
-	Button,
 	View,
 	TouchableOpacity,
 	Image,
+	ScrollView,
+	Modal,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
+
 import {
 	collection,
 	getDocs,
@@ -22,12 +22,23 @@ import {
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
 
+//Import Array of Images for Ingredients
+import { ingredientImageArr } from "../../assets/images/ingredients";
+
 import { db } from "../../../firebase-config";
 
-function InventoryScreen({ navigation, route }) {
+//Import Add Ingredient Modal
+import AddIngredientModal from "./AddIngredientModal";
+
+function InventoryScreen({ route }) {
 	const [isAdmin] = useState(route.params.isAdmin);
 	const [ingredients, SetIngredients] = useState([]);
 	const [products, SetProducts] = useState([]);
+	const [modalOpen, SetModalOpen] = useState(false);
+
+	function getImageIndex(imgName) {
+		return ingredientImageArr.findIndex((obj) => obj.name === imgName);
+	}
 
 	//Ingredients and Products Firebase reference
 	const ingredientsCollectionRef = collection(db, "ingredients");
@@ -37,6 +48,7 @@ function InventoryScreen({ navigation, route }) {
 		//Get Ingredients from Firestore
 		const getIngredients = async () => {
 			const ingredientsData = await getDocs(ingredientsCollectionRef);
+
 			SetIngredients(
 				ingredientsData.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
 			);
@@ -59,18 +71,27 @@ function InventoryScreen({ navigation, route }) {
 		//show detailed view about product
 	};
 
-	const handleButtonDelete = () => {
+	const handleButtonDelete = async (name) => {
 		//show confirmation message then
 		//delete document from database
+		await deleteDoc(doc(db, "ingredients", name));
 	};
 
 	const handleAddIngredient = () => {
-		//show add ingredient window
-		//add ingredient to database
+		//open add ingredient modal
+		SetModalOpen(true);
 	};
 
 	return (
 		<>
+			<Modal visible={modalOpen} animationType="slide">
+				<AddIngredientModal
+					closeModal={() => {
+						SetModalOpen(false);
+					}}
+				/>
+			</Modal>
+
 			<View>
 				<TouchableOpacity
 					style={{
@@ -91,79 +112,83 @@ function InventoryScreen({ navigation, route }) {
 			</View>
 
 			<View style={styles.container}>
-				{ingredients.map((ingredient) => {
-					return (
-						<View
-							key={ingredient.id}
-							style={{
-								width: "100%",
-								height: 130,
-								padding: 10,
-								marginBottom: 5,
-								borderWidth: 1,
-								borderRadius: 5,
-							}}
-						>
+				<ScrollView>
+					{ingredients.map((ingredient) => {
+						return (
 							<View
+								key={ingredient.id}
 								style={{
-									flexDirection: "row",
-									justifyContent: "flex-start",
-									alignItems: "flex-start",
+									width: "100%",
+									height: 130,
+									padding: 10,
+									marginBottom: 5,
+									borderWidth: 1,
+									borderRadius: 5,
 								}}
 							>
-								<Image
-									source={{ uri: "https://picsum.photos/100" }}
-									style={{
-										width: 100,
-										height: 100,
-									}}
-								/>
 								<View
 									style={{
-										marginLeft: 10,
+										flexDirection: "row",
+										justifyContent: "flex-start",
+										alignItems: "flex-start",
 									}}
 								>
-									<Text style={{ fontWeight: "bold" }}>
-										Name: {ingredient.ingredient_name}
-									</Text>
-									<Text>Category: {ingredient.ingredient_category}</Text>
-									<Text>
-										Quantity: {ingredient.ingredient_stock}{" "}
-										{ingredient.unit_of_measurement}
-									</Text>
-									<Text>
-										Stock Level: <Text style={{ color: "green" }}>GOOD</Text>
-									</Text>
+									<Image
+										source={ingredientImageArr[getImageIndex("Garlic")].image}
+										style={{
+											width: 100,
+											height: 100,
+										}}
+									/>
+									<View
+										style={{
+											marginLeft: 10,
+										}}
+									>
+										<Text style={{ fontWeight: "bold" }}>
+											Name: {ingredient.ingredient_name}
+										</Text>
+										<Text>Category: {ingredient.ingredient_category}</Text>
+										<Text>
+											Quantity: {ingredient.ingredient_stock}{" "}
+											{ingredient.unit_of_measurement}
+										</Text>
+										<Text>
+											Stock Level: <Text style={{ color: "green" }}>GOOD</Text>
+										</Text>
+									</View>
+								</View>
+
+								<View
+									style={{
+										position: "absolute",
+										top: 10,
+										right: 10,
+									}}
+								>
+									<TouchableOpacity
+										style={styles.buttonInside}
+										onPress={handleButtonView}
+									>
+										<Ionicons
+											name="clipboard-outline"
+											size={22}
+											color={"white"}
+										/>
+									</TouchableOpacity>
+									<TouchableOpacity
+										style={[styles.buttonInside, { backgroundColor: "red" }]}
+										onPress={() => {
+											handleButtonDelete(ingredient.ingredient_name);
+										}}
+									>
+										<Ionicons name="trash-outline" size={22} color={"white"} />
+									</TouchableOpacity>
 								</View>
 							</View>
-
-							<View
-								style={{
-									position: "absolute",
-									top: 10,
-									right: 10,
-								}}
-							>
-								<TouchableOpacity
-									style={styles.buttonView}
-									onPress={handleButtonView}
-								>
-									<Ionicons
-										name="clipboard-outline"
-										size={22}
-										color={"white"}
-									/>
-								</TouchableOpacity>
-								<TouchableOpacity
-									style={styles.buttonDelete}
-									onPress={handleButtonDelete}
-								>
-									<Ionicons name="trash-outline" size={22} color={"white"} />
-								</TouchableOpacity>
-							</View>
-						</View>
-					);
-				})}
+						);
+					})}
+				</ScrollView>
 			</View>
 		</>
 	);
@@ -175,22 +200,12 @@ const styles = StyleSheet.create({
 		marginHorizontal: 20,
 		marginVertical: 10,
 	},
-	buttonView: {
+	buttonInside: {
 		width: 50,
 		height: 50,
 		alignItems: "center",
 		justifyContent: "center",
 		backgroundColor: "#67BA64",
-		marginBottom: 5,
-		borderWidth: 1,
-		borderRadius: 6,
-	},
-	buttonDelete: {
-		width: 50,
-		height: 50,
-		alignItems: "center",
-		justifyContent: "center",
-		backgroundColor: "red",
 		marginBottom: 5,
 		borderWidth: 1,
 		borderRadius: 6,

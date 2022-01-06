@@ -51,30 +51,31 @@ function DrawerNavigation(props) {
 					),
 				}}
 			/>
-			<Drawer.Screen
-				name="Inventory"
-				component={InventoryScreen}
-				initialParams={{ isAdmin: isAdmin }}
-				options={{
-					drawerIcon: (color) => (
-						<Ionicons name="server-outline" size={22} color={color} />
-					),
-				}}
-			/>
+
 			{isAdmin ? (
 				<Drawer.Screen
-					name="Point of Sale"
-					component={OrderScreen}
+					name="Inventory"
+					component={InventoryScreen}
 					initialParams={{ isAdmin: isAdmin }}
 					options={{
 						drawerIcon: (color) => (
-							<Ionicons name="fast-food-outline" size={22} color={color} />
+							<Ionicons name="server-outline" size={22} color={color} />
 						),
 					}}
 				/>
 			) : (
 				<></>
 			)}
+			<Drawer.Screen
+				name="Point of Sale"
+				component={OrderScreen}
+				initialParams={{ isAdmin: isAdmin }}
+				options={{
+					drawerIcon: (color) => (
+						<Ionicons name="fast-food-outline" size={22} color={color} />
+					),
+				}}
+			/>
 		</Drawer.Navigator>
 	);
 }
