@@ -1,19 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { LogBox, ScrollView, Text, View } from "react-native";
-import { collection, getDocs, onSnapshot, doc } from "firebase/firestore";
+import React, { useState, useEffect } from "react";
+import { Text, View, StyleSheet, Button } from "react-native";
+
+import { collection, doc, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase-config";
 
 function Test(props) {
-	LogBox.ignoreLogs(["Setting a timer"]);
-
 	const [ingredients, SetIngredients] = useState([]);
-	const [products, SetProducts] = useState([]);
-
-	//Ingredients and Products Firebase reference
 	const ingredientsCollectionRef = collection(db, "ingredients");
-	const productsCollectionRef = collection(db, "products");
-
 	useEffect(() => {
+		let isMounted = true;
+
 		//Get Ingredients from Firestore
 		const getIngredients = async () => {
 			const unsub = onSnapshot(ingredientsCollectionRef, (docsSnapshot) => {
@@ -23,25 +19,61 @@ function Test(props) {
 					myIngredients.push(doc.data());
 				});
 
-				SetIngredients(myIngredients);
+				if (isMounted) {
+					SetIngredients(myIngredients);
+				}
 			});
 		};
 
 		getIngredients();
+
+		return () => {
+			isMounted = false;
+		};
 	}, []);
 
+	const CalculateROP = (safetyStock, demandDuringLead) => {
+		const ROP = safetyStock + demandDuringLead;
+
+		console.log(ROP);
+	};
+
+	const CalculateOrderSize = (
+		annualDemand,
+		annualHoldingCost,
+		annualOrderCost
+	) => {
+		//enter calculation hereeeee
+		const EOQ = Math.sqrt(
+			(2 * annualDemand * annualOrderCost) / annualHoldingCost
+		);
+		console.log(EOQ);
+	};
+
 	return (
-		<ScrollView>
-			{ingredients.map((ingredient) => {
-				return (
-					<View style={{ paddingBottom: 100 }} key={ingredient.ingredient_name}>
-						<Text>Name: {ingredient.ingredient_name}</Text>
-						<Text>Category: {ingredient.ingredient_category}</Text>
-					</View>
-				);
-			})}
-		</ScrollView>
+		<View style={styles.container}>
+			<Text>Hello World</Text>
+			<Button
+				title="CALCULATE ROP"
+				onPress={() => {
+					CalculateROP(100, 200);
+				}}
+			/>
+			<Button
+				title="CALCULATE EOQ"
+				onPress={() => {
+					CalculateOrderSize(73000, 100, 1000);
+				}}
+			/>
+		</View>
 	);
 }
+
+const styles = StyleSheet.create({
+	container: {
+		flex: 1,
+		marginTop: 20,
+	},
+});
 
 export default Test;

@@ -4,47 +4,46 @@ import {
 	StyleSheet,
 	View,
 	TouchableOpacity,
-	Image,
-	ScrollView,
+	FlatList,
+	TextInput,
 	Modal,
 } from "react-native";
 
-import {
-	collection,
-	getDocs,
-	doc,
-	deleteDoc,
-	onSnapshot,
-} from "firebase/firestore";
+import { collection, doc, deleteDoc, onSnapshot } from "firebase/firestore";
 
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
 
-//Import Array of Images for Ingredients
-import { ingredientImageArr } from "../../assets/images/ingredients";
-
 import { db } from "../../../firebase-config";
 
-//Import Add Ingredient Modal
+//Import Modals
 import AddIngredientModal from "./AddIngredientModal";
+import AddProductModal from "./AddProductModal";
+
+//Import Ingredient List Item component
+import IngredientItemComponent from "../../components/IngredientItemComponent";
 
 function InventoryScreen({ route }) {
 	const [isAdmin] = useState(route.params.isAdmin);
+
 	const [ingredients, SetIngredients] = useState([]);
+	const [filteredIngredients, SetFilteredIngredients] = useState([]);
+
 	const [products, SetProducts] = useState([]);
+	const [filteredProducts, SetFilteredProducts] = useState([]);
+
+	//Viewing Product or Ingredient State
+	const [isViewing, SetIsViewing] = useState("Ingredients"); //Set state to "Products" when toggled by something
+
 	const [modalOpen, SetModalOpen] = useState(false);
-
-	let child_id = 1;
-
-	function getImageIndex(imgName) {
-		return ingredientImageArr.findIndex((obj) => obj.name === imgName);
-	}
 
 	//Ingredients and Products Firebase reference
 	const ingredientsCollectionRef = collection(db, "ingredients");
 	const productsCollectionRef = collection(db, "products");
 
 	useEffect(() => {
+		let isMounted = true;
+
 		//Get Ingredients from Firestore
 		const getIngredients = async () => {
 			const unsub = onSnapshot(ingredientsCollectionRef, (docsSnapshot) => {
@@ -54,7 +53,10 @@ function InventoryScreen({ route }) {
 					myIngredients.push(doc.data());
 				});
 
-				SetIngredients(myIngredients);
+				if (isMounted) {
+					SetIngredients(myIngredients);
+					SetFilteredIngredients(myIngredients);
+				}
 			});
 		};
 
@@ -69,11 +71,18 @@ function InventoryScreen({ route }) {
 					myProducts.push(doc.data());
 				});
 
-				SetProducts(myProducts);
+				if (isMounted) {
+					SetProducts(myProducts);
+					SetFilteredProducts(myProducts);
+				}
 			});
 		};
 
 		getProducts();
+
+		return () => {
+			isMounted = false;
+		};
 	}, []);
 
 	const handleButtonView = () => {
@@ -86,152 +95,126 @@ function InventoryScreen({ route }) {
 		await deleteDoc(doc(db, "ingredients", name));
 	};
 
-	const handleAddIngredient = () => {
+	const handleOpenModal = () => {
 		//open add ingredient modal
 		SetModalOpen(true);
 	};
 
+	const SearchNameIngredient = (input) => {
+		const data = ingredients;
+
+		const searchData = data.filter((item) => {
+			return (
+				item.ingredient_name.toLowerCase().includes(input.toLowerCase()) ||
+				item.ingredient_category.toLowerCase().includes(input.toLowerCase()) ||
+				item.stock_status.toLowerCase().includes(input.toLowerCase())
+			);
+		});
+
+		SetFilteredIngredients(searchData);
+	};
+
+	const SearchNameProduct = (input) => {
+		const data = products;
+
+		const searchData = data.filter((item) => {
+			return (
+				item.product_name.toLowerCase().includes(input.toLowerCase()) ||
+				item.product_category.toLowerCase().includes(input.toLowerCase())
+			);
+		});
+
+		SetFilteredProducts(searchData);
+	};
+
 	return (
-		<>
+		<View style={styles.container}>
 			<Modal visible={modalOpen} animationType="slide">
-				<AddIngredientModal
-					closeModal={() => {
-						SetModalOpen(false);
-					}}
-				/>
+				{isViewing == "Ingredients" ? (
+					<AddIngredientModal
+						closeModal={() => {
+							SetModalOpen(false);
+						}}
+					/>
+				) : (
+					<AddProductModal
+						closeModal={() => {
+							SetModalOpen(false);
+						}}
+					/>
+				)}
 			</Modal>
 
 			<View>
-				<TouchableOpacity
-					style={{
-						alignSelf: "flex-end",
-						alignItems: "center",
-						backgroundColor: "#67BA64",
-						marginRight: 20,
-						flexDirection: "row",
-						padding: 4,
-						borderWidth: 1,
-						borderRadius: 12,
+				<TextInput
+					style={styles.searchBar}
+					placeholder={
+						isViewing == "Ingredients"
+							? "Search ingredient..."
+							: "Search products..."
+					}
+					onChangeText={(input) => {
+						if (isViewing == "Ingredients") {
+							SearchNameIngredient(input);
+						} else {
+							SearchNameProduct(input);
+						}
 					}}
-					onPress={handleAddIngredient}
+				/>
+				<TouchableOpacity
+					style={styles.addItemButtonContainer}
+					onPress={handleOpenModal}
 				>
 					<Ionicons name="add-outline" size={22} color={"white"} />
-					<Text style={{ color: "white", marginRight: 8 }}>Add Ingredient</Text>
+					<Text style={{ color: "white", marginRight: 8 }}>
+						{isViewing == "Ingredients" ? "Add Ingredient" : "Add Product"}
+					</Text>
 				</TouchableOpacity>
 			</View>
 
-			<View style={styles.container}>
-				<ScrollView>
-					{ingredients.map((ingredient) => {
-						return (
-							<View
-								key={++child_id}
-								style={{
-									width: "100%",
-									height: 130,
-									padding: 10,
-									marginBottom: 5,
-									borderWidth: 1,
-									borderRadius: 5,
-								}}
-							>
-								<View
-									key={++child_id}
-									style={{
-										flexDirection: "row",
-										justifyContent: "flex-start",
-										alignItems: "flex-start",
-									}}
-								>
-									<Image
-										key={++child_id}
-										source={{ uri: ingredient.imageURI }}
-										style={{
-											width: 100,
-											height: 100,
-										}}
-									/>
-									<View
-										key={++child_id}
-										style={{
-											marginLeft: 10,
-										}}
-									>
-										<Text key={++child_id} style={{ fontWeight: "bold" }}>
-											Name: {ingredient.ingredient_name}
-										</Text>
-										<Text key={++child_id}>
-											Category: {ingredient.ingredient_category}
-										</Text>
-										<Text key={++child_id}>
-											Quantity: {ingredient.ingredient_stock}{" "}
-											{ingredient.unit_of_measurement}
-										</Text>
-										<Text key={++child_id}>
-											Stock Level: <Text style={{ color: "green" }}>GOOD</Text>
-										</Text>
-									</View>
-								</View>
-
-								<View
-									key={++child_id}
-									style={{
-										position: "absolute",
-										top: 10,
-										right: 10,
-									}}
-								>
-									<TouchableOpacity
-										key={++child_id}
-										style={styles.buttonInside}
-										onPress={handleButtonView}
-									>
-										<Ionicons
-											key={++child_id}
-											name="clipboard-outline"
-											size={22}
-											color={"white"}
-										/>
-									</TouchableOpacity>
-									<TouchableOpacity
-										key={++child_id}
-										style={[styles.buttonInside, { backgroundColor: "red" }]}
-										onPress={() => {
-											handleButtonDelete(ingredient.ingredient_name);
-										}}
-									>
-										<Ionicons
-											key={++child_id}
-											name="trash-outline"
-											size={22}
-											color={"white"}
-										/>
-									</TouchableOpacity>
-								</View>
-							</View>
-						);
-					})}
-				</ScrollView>
-			</View>
-		</>
+			<FlatList
+				data={filteredIngredients}
+				keyExtractor={(item, index) => index.toString()}
+				renderItem={({ item }) => (
+					<IngredientItemComponent
+						name={item.ingredient_name}
+						category={item.ingredient_category}
+						quantity={item.ingredient_stock}
+						unit_of_measurement={item.unit_of_measurement}
+						imageURI={item.imageURI}
+						stock_status={item.stock_status}
+						handleButtonView={handleButtonView}
+						handleButtonDelete={handleButtonDelete}
+					/>
+				)}
+			/>
+		</View>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		marginHorizontal: 20,
-		marginVertical: 10,
+		marginHorizontal: 5,
 	},
-	buttonInside: {
-		width: 50,
-		height: 50,
+	addItemButtonContainer: {
+		alignSelf: "flex-end",
 		alignItems: "center",
-		justifyContent: "center",
 		backgroundColor: "#67BA64",
-		marginBottom: 5,
+		marginRight: 5,
+		flexDirection: "row",
+		padding: 4,
 		borderWidth: 1,
+		borderRadius: 12,
+	},
+	searchBar: {
+		width: "100%",
+		height: 40,
+		justifyContent: "center",
+		backgroundColor: "#C0C0C0",
 		borderRadius: 6,
+		marginTop: 5,
+		paddingHorizontal: 5,
 	},
 });
 
