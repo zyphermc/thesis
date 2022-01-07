@@ -32,39 +32,9 @@ function Test(props) {
 		};
 	}, []);
 
-	const CalculateROP = (safetyStock, demandDuringLead) => {
-		const ROP = safetyStock + demandDuringLead;
-
-		console.log(ROP);
-	};
-
-	const CalculateOrderSize = (
-		annualDemand,
-		annualHoldingCost,
-		annualOrderCost
-	) => {
-		//enter calculation hereeeee
-		const EOQ = Math.sqrt(
-			(2 * annualDemand * annualOrderCost) / annualHoldingCost
-		);
-		console.log(EOQ);
-	};
-
 	return (
 		<View style={styles.container}>
 			<Text>Hello World</Text>
-			<Button
-				title="CALCULATE ROP"
-				onPress={() => {
-					CalculateROP(100, 200);
-				}}
-			/>
-			<Button
-				title="CALCULATE EOQ"
-				onPress={() => {
-					CalculateOrderSize(73000, 100, 1000);
-				}}
-			/>
 		</View>
 	);
 }

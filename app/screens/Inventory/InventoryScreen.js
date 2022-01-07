@@ -9,7 +9,13 @@ import {
 	Modal,
 } from "react-native";
 
-import { collection, doc, deleteDoc, onSnapshot } from "firebase/firestore";
+import {
+	collection,
+	doc,
+	deleteDoc,
+	onSnapshot,
+	updateDoc,
+} from "firebase/firestore";
 
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -53,7 +59,47 @@ function InventoryScreen({ route }) {
 					myIngredients.push(doc.data());
 				});
 
+				//Update ROP, EOQ, and stock status of each Ingredient
+				myIngredients.map(async (ingredient) => {
+					const ROP = ingredient.safety_stock + ingredient.demand_during_lead;
+					const EOQ = Math.floor(
+						Math.sqrt(
+							(2 * ingredient.annual_demand * ingredient.annual_order_cost) /
+								ingredient.annual_holding_cost
+						)
+					);
+
+					const stock_status = () => {
+						if (ingredient.ingredient_stock < ingredient.safety_stock) {
+							return "LOW";
+						} else if (
+							ingredient.ingredient_stock >= ingredient.safety_stock &&
+							ingredient.ingredient_stock < ROP
+						) {
+							return "REORDER";
+						} else if (ingredient.ingredient_stock >= ROP) {
+							return "GOOD";
+						}
+					};
+
+					const stockStatus = stock_status();
+
+					try {
+						await updateDoc(
+							doc(db, "ingredients", ingredient.ingredient_name),
+							{
+								reorder_point: ROP,
+								order_size: EOQ,
+								stock_status: stockStatus,
+							}
+						);
+					} catch (err) {
+						console.log(err);
+					}
+				});
+
 				if (isMounted) {
+					//Update Ingredient State with latest data
 					SetIngredients(myIngredients);
 					SetFilteredIngredients(myIngredients);
 				}

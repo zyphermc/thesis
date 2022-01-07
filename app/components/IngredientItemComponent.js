@@ -8,10 +8,10 @@ function IngredientItemComponent(props) {
 	const GetStatusColor = () => {
 		if (props.stock_status === "GOOD") {
 			return styles.stock_levelGood;
-		} else if (props.stock_status === "MODERATE") {
-			return styles.stock_levelModerate;
+		} else if (props.stock_status === "REORDER") {
+			return styles.stock_levelReorder;
 		} else {
-			return styles.stock_levelRestock;
+			return styles.stock_levelLow;
 		}
 	};
 
@@ -30,7 +30,7 @@ function IngredientItemComponent(props) {
 				<Text style={styles.textStyle}>Name: {props.name}</Text>
 				<Text style={styles.textStyle}>Category: {props.category}</Text>
 				<Text style={styles.textStyle}>
-					Quantity: {props.quantity} {props.unit_of_measurement}
+					Quantity: {props.quantity} {props.unit_of_measurement.toLowerCase()}
 				</Text>
 				<Text style={styles.textStyle}>
 					Stock Level:{" "}
@@ -96,10 +96,10 @@ const styles = StyleSheet.create({
 	stock_levelGood: {
 		color: "green",
 	},
-	stock_levelModerate: {
+	stock_levelReorder: {
 		color: "#EA9C15",
 	},
-	stock_levelRestock: {
+	stock_levelLow: {
 		color: "red",
 	},
 });
