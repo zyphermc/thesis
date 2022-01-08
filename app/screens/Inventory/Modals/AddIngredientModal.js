@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Text, View } from "react-native";
-import AddIngredientForm from "./AddIngredientForm";
+import AddIngredientForm from "../Forms/AddIngredientForm";
 
 function AddIngredientModal(props) {
 	return (

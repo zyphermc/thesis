@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Text, View } from "react-native";
-import AddProductForm from "./AddProductForm";
+import AddProductForm from "../Forms/AddProductForm";
 
 function AddProductModal(props) {
 	return (

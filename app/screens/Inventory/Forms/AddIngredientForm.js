@@ -8,31 +8,38 @@ import {
 } from "react-native";
 import { Formik } from "formik";
 import { doc, setDoc } from "firebase/firestore";
-import { db } from "../../../firebase-config";
+import { db } from "../../../../firebase-config";
 
-function AddProductForm(props) {
+function AddIngredientForm(props) {
 	const initialValues = {
 		name: "",
 		category: "",
-		description: "",
-		quantity: "", //to be removed, going to be automatically calculated based on recipe
+		quantity: "",
 		price: "",
-		vatPercent: "",
+		unitOfMeasurement: "",
 		imageURI: "",
-		//Add recipe here
+		safetyStock: "",
+		demandDuringLead: "",
+		annualDemand: "",
+		annualHoldingCost: "",
+		annualOrderCost: "",
 	};
 
 	const AddToFirestore = async (data) => {
 		await setDoc(
-			doc(db, "products", data.name),
+			doc(db, "ingredients", data.name),
 			{
-				product_name: data.name,
-				product_category: data.category,
-				product_description: data.description,
-				product_quantity: parseInt(data.quantity),
-				product_sellingPrice: parseInt(data.price),
-				product_vatPercent: parseInt(data.vatPercent),
-				product_imageURI: data.imageURI,
+				ingredient_name: data.name,
+				ingredient_category: data.category,
+				ingredient_stock: parseInt(data.quantity),
+				ingredient_unitPrice_avg: parseInt(data.price),
+				unit_of_measurement: data.unitOfMeasurement,
+				imageURI: data.imageURI,
+				safety_stock: parseInt(data.safetyStock),
+				demand_during_lead: parseInt(data.demandDuringLead),
+				annual_demand: parseInt(data.annualDemand),
+				annual_holding_cost: parseInt(data.annualHoldingCost),
+				annual_order_cost: parseInt(data.annualOrderCost),
 			},
 			{ merge: true }
 		);
@@ -52,7 +59,7 @@ function AddProductForm(props) {
 					<View>
 						<TextInput
 							style={styles.input}
-							placeholder="Product Name"
+							placeholder="Ingredient Name"
 							onChangeText={props.handleChange("name")}
 							value={props.values.name}
 						/>
@@ -64,12 +71,6 @@ function AddProductForm(props) {
 						/>
 						<TextInput
 							style={styles.input}
-							placeholder="Description"
-							onChangeText={props.handleChange("description")}
-							value={props.values.description}
-						/>
-						<TextInput
-							style={styles.input}
 							placeholder="Quantity"
 							onChangeText={props.handleChange("quantity")}
 							value={props.values.quantity}
@@ -77,16 +78,50 @@ function AddProductForm(props) {
 						/>
 						<TextInput
 							style={styles.input}
-							placeholder="Selling Price in ₱"
+							placeholder="Unit of Measurement"
+							onChangeText={props.handleChange("unitOfMeasurement")}
+							value={props.values.unitOfMeasurement}
+						/>
+						<TextInput
+							style={styles.input}
+							placeholder="Initial Buying Price in ₱"
 							onChangeText={props.handleChange("price")}
 							value={props.values.price}
 							keyboardType="numeric"
 						/>
 						<TextInput
 							style={styles.input}
-							placeholder="VAT %"
-							onChangeText={props.handleChange("vatPercent")}
-							value={props.values.vatPercent}
+							placeholder="Safety Stock"
+							onChangeText={props.handleChange("safetyStock")}
+							value={props.values.safetyStock}
+							keyboardType="numeric"
+						/>
+						<TextInput
+							style={styles.input}
+							placeholder="Demand during lead time"
+							onChangeText={props.handleChange("demandDuringLead")}
+							value={props.values.demandDuringLead}
+							keyboardType="numeric"
+						/>
+						<TextInput
+							style={styles.input}
+							placeholder="Annual Demand"
+							onChangeText={props.handleChange("annualDemand")}
+							value={props.values.annualDemand}
+							keyboardType="numeric"
+						/>
+						<TextInput
+							style={styles.input}
+							placeholder="Annual Holding Cost in ₱"
+							onChangeText={props.handleChange("annualHoldingCost")}
+							value={props.values.annualHoldingCost}
+							keyboardType="numeric"
+						/>
+						<TextInput
+							style={styles.input}
+							placeholder="Annual Ordering Cost in ₱ (e.g. shipping fee, supplier fees, etc.)"
+							onChangeText={props.handleChange("annualOrderCost")}
+							value={props.values.annualOrderCost}
 							keyboardType="numeric"
 						/>
 						<TextInput
@@ -135,4 +170,4 @@ const styles = StyleSheet.create({
 	},
 });
 
-export default AddProductForm;
+export default AddIngredientForm;

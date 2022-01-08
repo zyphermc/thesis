@@ -24,8 +24,8 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { db } from "../../../firebase-config";
 
 //Import Modals
-import AddIngredientModal from "./AddIngredientModal";
-import AddProductModal from "./AddProductModal";
+import AddIngredientModal from "./Modals/AddIngredientModal";
+import AddProductModal from "./Modals/AddProductModal";
 
 //Import Ingredient List Item component
 import IngredientItemComponent from "../../components/IngredientItemComponent";
