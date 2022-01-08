@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
 		color: "green",
 	},
 	stock_levelReorder: {
-		color: "#EA9C15",
+		color: "#FF8000",
 	},
 	stock_levelLow: {
 		color: "red",

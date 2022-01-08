@@ -7,6 +7,7 @@ import {
 	FlatList,
 	TextInput,
 	Modal,
+	ActivityIndicator,
 } from "react-native";
 
 import {
@@ -28,6 +29,7 @@ import AddProductModal from "./AddProductModal";
 
 //Import Ingredient List Item component
 import IngredientItemComponent from "../../components/IngredientItemComponent";
+import { backgroundColor } from "react-native/Libraries/Components/View/ReactNativeStyleAttributes";
 
 function InventoryScreen({ route }) {
 	const [isAdmin] = useState(route.params.isAdmin);
@@ -40,6 +42,7 @@ function InventoryScreen({ route }) {
 
 	//Viewing Product or Ingredient State
 	const [isViewing, SetIsViewing] = useState("Ingredients"); //Set state to "Products" when toggled by something
+	const [isLoading, SetIsLoading] = useState(true);
 
 	const [modalOpen, SetModalOpen] = useState(false);
 
@@ -49,54 +52,70 @@ function InventoryScreen({ route }) {
 
 	useEffect(() => {
 		let isMounted = true;
-
+		SetIsLoading(true);
 		//Get Ingredients from Firestore
 		const getIngredients = async () => {
 			const unsub = onSnapshot(ingredientsCollectionRef, (docsSnapshot) => {
 				const myIngredients = [];
+
+				docsSnapshot.docChanges().forEach(async (change) => {
+					if (change.type === "added" || change.type === "modified") {
+						const ROP =
+							change.doc.data().safety_stock +
+							change.doc.data().demand_during_lead;
+						const EOQ = Math.floor(
+							Math.sqrt(
+								(2 *
+									change.doc.data().annual_demand *
+									change.doc.data().annual_order_cost) /
+									change.doc.data().annual_holding_cost
+							)
+						);
+
+						const stock_status = () => {
+							if (
+								change.doc.data().ingredient_stock <
+								change.doc.data().safety_stock
+							) {
+								return "LOW";
+							} else if (
+								change.doc.data().ingredient_stock >=
+									change.doc.data().safety_stock &&
+								change.doc.data().ingredient_stock < ROP
+							) {
+								return "REORDER";
+							} else if (change.doc.data().ingredient_stock >= ROP) {
+								return "GOOD";
+							}
+						};
+
+						const stockStatus = stock_status();
+
+						try {
+							await updateDoc(
+								doc(db, "ingredients", change.doc.data().ingredient_name),
+								{
+									reorder_point: ROP,
+									order_size: EOQ,
+									stock_status: stockStatus,
+								}
+							);
+						} catch (err) {
+							console.log(err);
+						}
+
+						console.log(
+							"Added or Modified: ",
+							change.doc.data().ingredient_name
+						);
+					}
+				});
 
 				docsSnapshot.forEach((doc) => {
 					myIngredients.push(doc.data());
 				});
 
 				//Update ROP, EOQ, and stock status of each Ingredient
-				myIngredients.map(async (ingredient) => {
-					const ROP = ingredient.safety_stock + ingredient.demand_during_lead;
-					const EOQ = Math.floor(
-						Math.sqrt(
-							(2 * ingredient.annual_demand * ingredient.annual_order_cost) /
-								ingredient.annual_holding_cost
-						)
-					);
-
-					const stock_status = () => {
-						if (ingredient.ingredient_stock < ingredient.safety_stock) {
-							return "LOW";
-						} else if (
-							ingredient.ingredient_stock >= ingredient.safety_stock &&
-							ingredient.ingredient_stock < ROP
-						) {
-							return "REORDER";
-						} else if (ingredient.ingredient_stock >= ROP) {
-							return "GOOD";
-						}
-					};
-
-					const stockStatus = stock_status();
-
-					try {
-						await updateDoc(
-							doc(db, "ingredients", ingredient.ingredient_name),
-							{
-								reorder_point: ROP,
-								order_size: EOQ,
-								stock_status: stockStatus,
-							}
-						);
-					} catch (err) {
-						console.log(err);
-					}
-				});
 
 				if (isMounted) {
 					//Update Ingredient State with latest data
@@ -126,6 +145,7 @@ function InventoryScreen({ route }) {
 
 		getProducts();
 
+		SetIsLoading(false);
 		return () => {
 			isMounted = false;
 		};
@@ -173,6 +193,57 @@ function InventoryScreen({ route }) {
 		SetFilteredProducts(searchData);
 	};
 
+	function ShowIngredientsComponent() {
+		if (isLoading) {
+			return (
+				<ActivityIndicator
+					animating={isLoading}
+					size="large"
+					color="black"
+					style={styles.loadingAnimation}
+				/>
+			);
+		} else {
+			if (isViewing === "Ingredients") {
+				return (
+					<FlatList
+						data={filteredIngredients}
+						keyExtractor={(item, index) => index.toString()}
+						renderItem={({ item }) => (
+							<IngredientItemComponent
+								name={item.ingredient_name}
+								category={item.ingredient_category}
+								quantity={item.ingredient_stock}
+								unit_of_measurement={item.unit_of_measurement}
+								imageURI={item.imageURI}
+								stock_status={item.stock_status}
+								handleButtonView={handleButtonView}
+								handleButtonDelete={handleButtonDelete}
+							/>
+						)}
+					/>
+				);
+			}
+		}
+	}
+
+	function ShowProductsComponent() {
+		if (isLoading) {
+			return (
+				<ActivityIndicator
+					animating={isLoading}
+					size="large"
+					color="black"
+					style={styles.loadingAnimation}
+				/>
+			);
+		} else {
+			if (isViewing === "Products") {
+				return <Text>MY PRODUCTS</Text>;
+			}
+		}
+	}
+
 	return (
 		<View style={styles.container}>
 			<Modal visible={modalOpen} animationType="slide">
@@ -207,33 +278,46 @@ function InventoryScreen({ route }) {
 						}
 					}}
 				/>
-				<TouchableOpacity
-					style={styles.addItemButtonContainer}
-					onPress={handleOpenModal}
-				>
-					<Ionicons name="add-outline" size={22} color={"white"} />
-					<Text style={{ color: "white", marginRight: 8 }}>
-						{isViewing == "Ingredients" ? "Add Ingredient" : "Add Product"}
-					</Text>
-				</TouchableOpacity>
+				<View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+					<TouchableOpacity
+						style={[
+							styles.switchViewButtonContainer,
+							{
+								backgroundColor:
+									isViewing === "Ingredients" ? "#1DC5DA" : "#DA321D",
+							},
+						]}
+						onPress={() => {
+							isViewing === "Ingredients"
+								? SetIsViewing("Products")
+								: SetIsViewing("Ingredients");
+						}}
+					>
+						<Ionicons name="fast-food-outline" size={22} color={"white"} />
+						<Text style={{ color: "white", marginLeft: 5 }}>
+							{isViewing === "Ingredients"
+								? "View Products"
+								: "View Ingredients"}
+						</Text>
+					</TouchableOpacity>
+
+					<TouchableOpacity
+						style={styles.addItemButtonContainer}
+						onPress={handleOpenModal}
+					>
+						<Ionicons name="add-outline" size={22} color={"white"} />
+						<Text style={{ color: "white" }}>
+							{isViewing == "Ingredients" ? "Add Ingredient" : "Add Product"}
+						</Text>
+					</TouchableOpacity>
+				</View>
 			</View>
 
-			<FlatList
-				data={filteredIngredients}
-				keyExtractor={(item, index) => index.toString()}
-				renderItem={({ item }) => (
-					<IngredientItemComponent
-						name={item.ingredient_name}
-						category={item.ingredient_category}
-						quantity={item.ingredient_stock}
-						unit_of_measurement={item.unit_of_measurement}
-						imageURI={item.imageURI}
-						stock_status={item.stock_status}
-						handleButtonView={handleButtonView}
-						handleButtonDelete={handleButtonDelete}
-					/>
-				)}
-			/>
+			{isViewing === "Ingredients" ? (
+				<ShowIngredientsComponent />
+			) : (
+				<ShowProductsComponent />
+			)}
 		</View>
 	);
 }
@@ -244,14 +328,29 @@ const styles = StyleSheet.create({
 		marginHorizontal: 5,
 	},
 	addItemButtonContainer: {
-		alignSelf: "flex-end",
+		flex: 0.4,
+		justifyContent: "center",
 		alignItems: "center",
 		backgroundColor: "#67BA64",
-		marginRight: 5,
+		margin: 3,
 		flexDirection: "row",
 		padding: 4,
 		borderWidth: 1,
 		borderRadius: 12,
+	},
+	switchViewButtonContainer: {
+		flex: 0.4,
+		justifyContent: "center",
+		alignItems: "center",
+		margin: 3,
+		flexDirection: "row",
+		padding: 4,
+		borderWidth: 1,
+		borderRadius: 12,
+	},
+	loadingAnimation: {
+		justifyContent: "center",
+		alignSelf: "center",
 	},
 	searchBar: {
 		width: "100%",
