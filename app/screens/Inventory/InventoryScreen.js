@@ -29,7 +29,7 @@ import AddProductModal from "./AddProductModal";
 
 //Import Ingredient List Item component
 import IngredientItemComponent from "../../components/IngredientItemComponent";
-import { backgroundColor } from "react-native/Libraries/Components/View/ReactNativeStyleAttributes";
+import ProductItemComponent from "../../components/ProductItemComponent";
 
 function InventoryScreen({ route }) {
 	const [isAdmin] = useState(route.params.isAdmin);
@@ -53,11 +53,13 @@ function InventoryScreen({ route }) {
 	useEffect(() => {
 		let isMounted = true;
 		SetIsLoading(true);
+
 		//Get Ingredients from Firestore
 		const getIngredients = async () => {
 			const unsub = onSnapshot(ingredientsCollectionRef, (docsSnapshot) => {
 				const myIngredients = [];
 
+				//Update ROP, EOQ, and stock status of each added or modified Ingredient
 				docsSnapshot.docChanges().forEach(async (change) => {
 					if (change.type === "added" || change.type === "modified") {
 						const ROP =
@@ -115,8 +117,6 @@ function InventoryScreen({ route }) {
 					myIngredients.push(doc.data());
 				});
 
-				//Update ROP, EOQ, and stock status of each Ingredient
-
 				if (isMounted) {
 					//Update Ingredient State with latest data
 					SetIngredients(myIngredients);
@@ -131,6 +131,13 @@ function InventoryScreen({ route }) {
 		const getProducts = async () => {
 			const unsub = onSnapshot(productsCollectionRef, (docsSnapshot) => {
 				const myProducts = [];
+
+				docsSnapshot.docChanges().forEach(async (change) => {
+					if (change.type === "added" || change.type === "modified") {
+						//If there is a document added or modified,
+						//do stuff here
+					}
+				});
 
 				docsSnapshot.forEach((doc) => {
 					myProducts.push(doc.data());
@@ -156,9 +163,13 @@ function InventoryScreen({ route }) {
 	};
 
 	const handleButtonDelete = async (name) => {
-		//show confirmation message then
+		//if needed: show confirmation message then
 		//delete document from database
-		await deleteDoc(doc(db, "ingredients", name));
+		if (isViewing === "Ingredients") {
+			await deleteDoc(doc(db, "ingredients", name));
+		} else {
+			await deleteDoc(doc(db, "products", name));
+		}
 	};
 
 	const handleOpenModal = () => {
@@ -239,7 +250,23 @@ function InventoryScreen({ route }) {
 			);
 		} else {
 			if (isViewing === "Products") {
-				return <Text>MY PRODUCTS</Text>;
+				return (
+					<FlatList
+						data={filteredProducts}
+						keyExtractor={(item, index) => index.toString()}
+						renderItem={({ item }) => (
+							<ProductItemComponent
+								name={item.product_name}
+								category={item.product_category}
+								quantity={item.product_quantity}
+								sellingPrice={item.product_sellingPrice}
+								imageURI={item.product_imageURI}
+								handleButtonView={handleButtonView}
+								handleButtonDelete={handleButtonDelete}
+							/>
+						)}
+					/>
+				);
 			}
 		}
 	}
@@ -293,7 +320,15 @@ function InventoryScreen({ route }) {
 								: SetIsViewing("Ingredients");
 						}}
 					>
-						<Ionicons name="fast-food-outline" size={22} color={"white"} />
+						<Ionicons
+							name={
+								isViewing === "Ingredients"
+									? "fast-food-outline"
+									: "restaurant-outline"
+							}
+							size={22}
+							color={"white"}
+						/>
 						<Text style={{ color: "white", marginLeft: 5 }}>
 							{isViewing === "Ingredients"
 								? "View Products"
