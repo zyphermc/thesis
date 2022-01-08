@@ -26,6 +26,8 @@ import { db } from "../../../firebase-config";
 //Import Modals
 import AddIngredientModal from "./Modals/AddIngredientModal";
 import AddProductModal from "./Modals/AddProductModal";
+import ViewIngredientModal from "./Modals/ViewIngredientModal";
+import ViewProductModal from "./Modals/ViewProductModal";
 
 //Import Ingredient List Item component
 import IngredientItemComponent from "../../components/IngredientItemComponent";
@@ -43,8 +45,10 @@ function InventoryScreen({ route }) {
 	//Viewing Product or Ingredient State
 	const [isViewing, SetIsViewing] = useState("Ingredients"); //Set state to "Products" when toggled by something
 	const [isLoading, SetIsLoading] = useState(true);
+	const [viewingItem, SetViewingItem] = useState("");
 
 	const [modalOpen, SetModalOpen] = useState(false);
+	const [viewModalOpen, SetViewModalOpen] = useState(false);
 
 	//Ingredients and Products Firebase reference
 	const ingredientsCollectionRef = collection(db, "ingredients");
@@ -158,8 +162,10 @@ function InventoryScreen({ route }) {
 		};
 	}, []);
 
-	const handleButtonView = () => {
+	const handleButtonView = (itemName) => {
 		//show detailed view about product
+		SetViewingItem(itemName);
+		SetViewModalOpen(true);
 	};
 
 	const handleButtonDelete = async (name) => {
@@ -289,6 +295,24 @@ function InventoryScreen({ route }) {
 				)}
 			</Modal>
 
+			<Modal visible={viewModalOpen} animationType="slide">
+				{isViewing == "Ingredients" ? (
+					<ViewIngredientModal
+						itemName={viewingItem}
+						closeModal={() => {
+							SetViewModalOpen(false);
+						}}
+					/>
+				) : (
+					<ViewProductModal
+						itemName={viewingItem}
+						closeModal={() => {
+							SetViewModalOpen(false);
+						}}
+					/>
+				)}
+			</Modal>
+
 			<View>
 				<TextInput
 					style={styles.searchBar}
@@ -360,7 +384,7 @@ function InventoryScreen({ route }) {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		marginHorizontal: 5,
+		backgroundColor: "#8966F8",
 	},
 	addItemButtonContainer: {
 		flex: 0.4,

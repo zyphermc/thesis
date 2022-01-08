@@ -1,5 +1,5 @@
 import { React, useState } from "react";
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, ImageBackground } from "react-native";
 
 function HomeScreen({ navigation, route }) {
 	const [isAdmin] = useState(route.params.isAdmin);
@@ -11,9 +11,14 @@ function HomeScreen({ navigation, route }) {
 	};
 
 	return (
-		<View style={styles.container}>
+		<ImageBackground
+			source={{
+				uri: "https://i.pinimg.com/originals/6c/59/cd/6c59cd041f58cd43c9be81cfa2546f9d.jpg",
+			}}
+			style={styles.container}
+		>
 			<Text>Home</Text>
-		</View>
+		</ImageBackground>
 	);
 }
 

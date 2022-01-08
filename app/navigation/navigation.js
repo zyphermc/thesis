@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "react-native";
 
 //Navigation
 import { NavigationContainer } from "@react-navigation/native";
@@ -40,6 +41,12 @@ function DrawerNavigation(props) {
 		<Drawer.Navigator
 			drawerContent={(props) => <CustomDrawer {...props} />}
 			initialRouteName="Home"
+			screenOptions={{
+				headerStyle: {
+					backgroundColor: "#f4511e",
+				},
+				headerTintColor: "#fff",
+			}}
 		>
 			<Drawer.Screen
 				name="Home"

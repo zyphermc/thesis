@@ -45,7 +45,9 @@ function ProductItemComponent(props) {
 			>
 				<TouchableOpacity
 					style={styles.buttonInside}
-					onPress={props.handleButtonView}
+					onPress={() => {
+						props.handleButtonView(props.name);
+					}}
 				>
 					<Ionicons name="clipboard-outline" size={22} color={"white"} />
 				</TouchableOpacity>
