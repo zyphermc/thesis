@@ -1,30 +1,38 @@
 import React, { useState, useEffect } from "react";
-import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
-
 import {
-	collection,
-	doc,
-	deleteDoc,
-	onSnapshot,
-	updateDoc,
-} from "firebase/firestore";
+	Text,
+	View,
+	TouchableOpacity,
+	StyleSheet,
+	ImageBackground,
+	Image,
+} from "react-native";
+
+import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
 
-import { db } from "../../../../firebase-config";
+//Forms
+import { Formik } from "formik";
 
-//THIS SHOULD ACCEPT PRODUCT NAME PROP TO ACCESS DOCUMENT FROM FIRESTORE
+import { db } from "../../../../firebase-config";
 
 function ViewProductModal(props) {
 	console.log(props.itemName);
 
 	return (
-		<View style={styles.container}>
+		<ImageBackground
+			source={{
+				uri: "https://i.ibb.co/4Vzwdcc/Pngtree-milk-tea-shop-poster-background-1021135.jpg",
+			}}
+			resizeMode="cover"
+			style={styles.container}
+		>
 			<TouchableOpacity style={styles.closeButton} onPress={props.closeModal}>
 				<Ionicons name="close-outline" size={40} color={"black"} />
 			</TouchableOpacity>
-		</View>
+		</ImageBackground>
 	);
 }
 

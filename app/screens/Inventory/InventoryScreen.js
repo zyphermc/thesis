@@ -8,6 +8,7 @@ import {
 	TextInput,
 	Modal,
 	ActivityIndicator,
+	ImageBackground,
 } from "react-native";
 
 import {
@@ -240,6 +241,8 @@ function InventoryScreen({ route }) {
 						)}
 					/>
 				);
+			} else {
+				return null;
 			}
 		}
 	}
@@ -278,106 +281,115 @@ function InventoryScreen({ route }) {
 	}
 
 	return (
-		<View style={styles.container}>
-			<Modal visible={modalOpen} animationType="slide">
-				{isViewing == "Ingredients" ? (
-					<AddIngredientModal
-						closeModal={() => {
-							SetModalOpen(false);
-						}}
-					/>
-				) : (
-					<AddProductModal
-						closeModal={() => {
-							SetModalOpen(false);
-						}}
-					/>
-				)}
-			</Modal>
-
-			<Modal visible={viewModalOpen} animationType="slide">
-				{isViewing == "Ingredients" ? (
-					<ViewIngredientModal
-						itemName={viewingItem}
-						closeModal={() => {
-							SetViewModalOpen(false);
-						}}
-					/>
-				) : (
-					<ViewProductModal
-						itemName={viewingItem}
-						closeModal={() => {
-							SetViewModalOpen(false);
-						}}
-					/>
-				)}
-			</Modal>
-
-			<View>
-				<TextInput
-					style={styles.searchBar}
-					placeholder={
-						isViewing == "Ingredients"
-							? "Search ingredient..."
-							: "Search products..."
-					}
-					onChangeText={(input) => {
-						if (isViewing == "Ingredients") {
-							SearchNameIngredient(input);
-						} else {
-							SearchNameProduct(input);
-						}
-					}}
-				/>
-				<View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-					<TouchableOpacity
-						style={[
-							styles.switchViewButtonContainer,
-							{
-								backgroundColor:
-									isViewing === "Ingredients" ? "#1DC5DA" : "#DA321D",
-							},
-						]}
-						onPress={() => {
-							isViewing === "Ingredients"
-								? SetIsViewing("Products")
-								: SetIsViewing("Ingredients");
-						}}
-					>
-						<Ionicons
-							name={
-								isViewing === "Ingredients"
-									? "fast-food-outline"
-									: "restaurant-outline"
-							}
-							size={22}
-							color={"white"}
+		<ImageBackground
+			source={{
+				uri: "https://i.pinimg.com/originals/6c/59/cd/6c59cd041f58cd43c9be81cfa2546f9d.jpg",
+			}}
+			resizeMode="cover"
+			style={styles.container}
+		>
+			<View style={{ marginHorizontal: 5 }}>
+				<Modal visible={modalOpen} animationType="slide">
+					{isViewing == "Ingredients" ? (
+						<AddIngredientModal
+							closeModal={() => {
+								SetModalOpen(false);
+							}}
 						/>
-						<Text style={{ color: "white", marginLeft: 5 }}>
-							{isViewing === "Ingredients"
-								? "View Products"
-								: "View Ingredients"}
-						</Text>
-					</TouchableOpacity>
+					) : (
+						<AddProductModal
+							closeModal={() => {
+								SetModalOpen(false);
+							}}
+						/>
+					)}
+				</Modal>
 
-					<TouchableOpacity
-						style={styles.addItemButtonContainer}
-						onPress={handleOpenModal}
+				<Modal visible={viewModalOpen} animationType="slide">
+					{isViewing == "Ingredients" ? (
+						<ViewIngredientModal
+							itemName={viewingItem}
+							closeModal={() => {
+								SetViewModalOpen(false);
+							}}
+						/>
+					) : (
+						<ViewProductModal
+							itemName={viewingItem}
+							closeModal={() => {
+								SetViewModalOpen(false);
+							}}
+						/>
+					)}
+				</Modal>
+
+				<View>
+					<TextInput
+						style={styles.searchBar}
+						placeholder={
+							isViewing == "Ingredients"
+								? "Search ingredient..."
+								: "Search products..."
+						}
+						onChangeText={(input) => {
+							if (isViewing == "Ingredients") {
+								SearchNameIngredient(input);
+							} else {
+								SearchNameProduct(input);
+							}
+						}}
+					/>
+					<View
+						style={{ flexDirection: "row", justifyContent: "space-between" }}
 					>
-						<Ionicons name="add-outline" size={22} color={"white"} />
-						<Text style={{ color: "white" }}>
-							{isViewing == "Ingredients" ? "Add Ingredient" : "Add Product"}
-						</Text>
-					</TouchableOpacity>
+						<TouchableOpacity
+							style={[
+								styles.switchViewButtonContainer,
+								{
+									backgroundColor:
+										isViewing === "Ingredients" ? "#1DC5DA" : "#DA321D",
+								},
+							]}
+							onPress={() => {
+								isViewing === "Ingredients"
+									? SetIsViewing("Products")
+									: SetIsViewing("Ingredients");
+							}}
+						>
+							<Ionicons
+								name={
+									isViewing === "Ingredients"
+										? "fast-food-outline"
+										: "restaurant-outline"
+								}
+								size={22}
+								color={"white"}
+							/>
+							<Text style={{ color: "white", marginLeft: 5 }}>
+								{isViewing === "Ingredients"
+									? "View Products"
+									: "View Ingredients"}
+							</Text>
+						</TouchableOpacity>
+
+						<TouchableOpacity
+							style={styles.addItemButtonContainer}
+							onPress={handleOpenModal}
+						>
+							<Ionicons name="add-outline" size={22} color={"white"} />
+							<Text style={{ color: "white" }}>
+								{isViewing == "Ingredients" ? "Add Ingredient" : "Add Product"}
+							</Text>
+						</TouchableOpacity>
+					</View>
 				</View>
 			</View>
-
 			{isViewing === "Ingredients" ? (
 				<ShowIngredientsComponent />
 			) : (
 				<ShowProductsComponent />
 			)}
-		</View>
+		</ImageBackground>
 	);
 }
 

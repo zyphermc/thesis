@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Text, View, StyleSheet, Button } from "react-native";
+import { Text, View, StyleSheet, Button, ScrollView } from "react-native";
 
 import { collection, doc, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase-config";
@@ -34,7 +34,50 @@ function Test(props) {
 
 	return (
 		<View style={styles.container}>
-			<Text>Hello World</Text>
+			<Button title="HEWOWWWW" />
+			<ScrollView>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+				<Text style={{ fontSize: 30 }}>Hello World</Text>
+			</ScrollView>
+			<Button title="HEWWWWWOWWWW" />
 		</View>
 	);
 }
