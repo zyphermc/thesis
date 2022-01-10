@@ -11,7 +11,7 @@ function PosComponent(props) {
 	};
 	const [count, setCount] = useState(0);
 	const onPressAdd = () => setCount(prevCount => prevCount + 1);
-	const onPressMinus = () => setCount(prevCount => prevCount - 1);
+	const onPressMinus = () => setCount(prevCount => prevCount - 1 ? 0 : 0);
 
 	return (
 		<View style={styles.container}>
