@@ -49,16 +49,28 @@ function PosComponent(props) {
 						props.handleButtonAdd();
 					}}
 				>
-					<Ionicons name="clipboard-outline" size={22} color={"white"} />
+					<Ionicons name="cart-outline" size={35} color={"white"} />
 				</TouchableOpacity>
-				<TouchableOpacity
-					style={[styles.buttonInside, { backgroundColor: "red" }]}
+
+				{/* <TouchableOpacity
+					style={{
+						width: 30,
+						height: 30,
+						marginTop: 15,
+						justifyContent: "center",
+						alignItems: "center",
+						backgroundColor: "#67BA64",
+						margin: 2,
+						borderWidth: 1,
+						borderRadius: 6,
+					}}
 					onPress={() => {
 						props.number1();
 					}}
 				>
-					<Ionicons name="trash-outline" size={22} color={"white"} />
-				</TouchableOpacity>
+					<Ionicons name="add-circle-outline" size={22} color={"black"} />
+				</TouchableOpacity> */}
+
 			</View>
 		</View>
 	);
@@ -76,7 +88,8 @@ const styles = StyleSheet.create({
 		padding: 5,
 	},
 	buttonInside: {
-		width: 50,
+		marginTop: 25,
+		width: 100,
 		height: 50,
 		justifyContent: "center",
 		alignItems: "center",
