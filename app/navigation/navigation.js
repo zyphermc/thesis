@@ -14,6 +14,7 @@ import InventoryScreen from "../screens/Inventory/InventoryScreen";
 import OrderScreen from "../screens/Orders/OrderScreen";
 import CustomDrawer from "../components/CustomDrawer";
 import Cart from "../screens/Orders/Cart";
+import CheckOut from "../screens/Orders/CheckOut"
 
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -105,6 +106,11 @@ function TabNavigation() {
 				name="Cart"
 				component={Cart}
 				options={{ tabBarLabel: "Cart", title: "Cart" }}
+			/>
+			<Tab.Screen
+				name="CheckOut"
+				component={CheckOut}
+				options={{ tabBarLabel: "CheckOut", title: "CheckOut" }}
 			/>
 		</Tab.Navigator>
 	);

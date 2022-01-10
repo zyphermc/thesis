@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
-
+import { useState } from "react";
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
 
@@ -9,6 +9,9 @@ function PosComponent(props) {
 		//Calculates how many orders can the user make based on recipe
 		console.log("Quantity Calculated");
 	};
+	const [count, setCount] = useState(0);
+	const onPressAdd = () => setCount(prevCount => prevCount + 1);
+	const onPressMinus = () => setCount(prevCount => prevCount - 1);
 
 	return (
 		<View style={styles.container}>
@@ -51,26 +54,28 @@ function PosComponent(props) {
 				>
 					<Ionicons name="cart-outline" size={35} color={"white"} />
 				</TouchableOpacity>
-
-				{/* <TouchableOpacity
-					style={{
-						width: 30,
-						height: 30,
-						marginTop: 15,
-						justifyContent: "center",
-						alignItems: "center",
-						backgroundColor: "#67BA64",
-						margin: 2,
-						borderWidth: 1,
-						borderRadius: 6,
-					}}
-					onPress={() => {
-						props.number1();
-					}}
+				<View
+					style={{ flexDirection: 'row', alignItems: 'center' }}
 				>
-					<Ionicons name="add-circle-outline" size={22} color={"black"} />
-				</TouchableOpacity> */}
+					<TouchableOpacity
+						onPress={onPressMinus}
+					>
+						<Ionicons name="remove-circle-outline" size={25} color={"black"} />
+					</TouchableOpacity>
 
+					<Text
+						style={{ fontWeight: 'bold', paddingHorizontal: 5 }}
+					>
+						{count}
+					</Text>
+
+					<TouchableOpacity
+						onPress={onPressAdd}
+					>
+						<Ionicons name="add-circle-outline" size={25} color={"black"} />
+					</TouchableOpacity>
+
+				</View>
 			</View>
 		</View>
 	);
