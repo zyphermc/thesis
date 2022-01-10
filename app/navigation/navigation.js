@@ -5,6 +5,7 @@ import Image from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createDrawerNavigator } from "@react-navigation/drawer";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 
 //Screens
 import LoginScreen from "../screens/Login/LoginScreen";
@@ -27,6 +28,7 @@ function StackNavigation(props) {
 			>
 				<Stack.Screen name={"Login"} component={LoginScreen} />
 				<Stack.Screen name={"Drawer"} component={DrawerNavigation} />
+				<Stack.Screen name={"Tab"} component={TabNavigation} />
 			</Stack.Navigator>
 		</NavigationContainer>
 	);
@@ -85,6 +87,30 @@ function DrawerNavigation(props) {
 			/>
 		</Drawer.Navigator>
 	);
+}
+
+const Tab = createMaterialTopTabNavigator();
+function TabNavigation() {
+	<NavigationContainer>
+		<Tab.Navigator
+			initialRouteName="Cart"
+			tabBarOptions={{
+				activeTintColor: "cyan",
+				labelStyle: { fontSize: 12 },
+			}}
+		>
+			<Tab.Screen
+				name="Cart"
+				component={Cart}
+				options={{ tabBarLabel: "Cart" }}
+			/>
+			<Tab.Screen
+				name="CheckOut"
+				component={CheckOut}
+				options={{ tabBarLabel: "CheckOut" }}
+			/>
+		</Tab.Navigator>
+	</NavigationContainer>;
 }
 
 export default StackNavigation;

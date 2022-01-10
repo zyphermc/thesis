@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigation } from "@react-navigation/native";
 import {
 	Text,
 	StyleSheet,
@@ -25,7 +26,6 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { db } from "../../../firebase-config";
 //Import Ingredient List Item component
 import PosComponent from "../../components/PosComponent";
-import CheckoutModal from "./CheckoutModal";
 
 function OrderScreen({ route }) {
 	const [products, SetProducts] = useState([]);
@@ -38,6 +38,8 @@ function OrderScreen({ route }) {
 
 	//Ingredients and Products Firebase reference
 	const productsCollectionRef = collection(db, "products");
+
+	const navigation = useNavigation();
 
 	useEffect(() => {
 		let isMounted = true;
@@ -140,14 +142,6 @@ function OrderScreen({ route }) {
 			style={styles.container}
 		>
 			<View style={{ marginHorizontal: 5 }}>
-				<Modal visible={modalOpen} animationType="slide">
-					<CheckoutModal
-						closeModal={() => {
-							SetModalOpen(false);
-						}}
-					/>
-				</Modal>
-
 				<View>
 					<TextInput
 						style={styles.searchBar}
@@ -161,7 +155,9 @@ function OrderScreen({ route }) {
 					>
 						<TouchableOpacity
 							style={styles.addItemButtonContainer}
-							onPress={handleOpenModal}
+							onPress={() => {
+								navigation.navigate("Tab");
+							}}
 						>
 							<Ionicons name="add-outline" size={22} color={"white"} />
 							<Text style={{ color: "white" }}>CheckOut</Text>
