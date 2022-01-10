@@ -28,7 +28,6 @@ import PosComponent from "../../components/PosComponent";
 import CheckoutModal from "./CheckoutModal";
 
 function OrderScreen({ route }) {
-
 	const [products, SetProducts] = useState([]);
 	const [filteredProducts, SetFilteredProducts] = useState([]);
 
@@ -80,14 +79,13 @@ function OrderScreen({ route }) {
 	};
 
 	const number1 = () => {
-		//button 
+		//button
 	};
 
 	const handleOpenModal = () => {
 		//open add ingredient modal
 		SetModalOpen(true);
 	};
-
 
 	const SearchNameProduct = (input) => {
 		const data = products;
@@ -153,9 +151,7 @@ function OrderScreen({ route }) {
 				<View>
 					<TextInput
 						style={styles.searchBar}
-						placeholder={
-							"Search products..."
-						}
+						placeholder={"Search products..."}
 						onChangeText={(input) => {
 							SearchNameProduct(input);
 						}}
@@ -168,9 +164,7 @@ function OrderScreen({ route }) {
 							onPress={handleOpenModal}
 						>
 							<Ionicons name="add-outline" size={22} color={"white"} />
-							<Text style={{ color: "white" }}>
-								CheckOut
-							</Text>
+							<Text style={{ color: "white" }}>CheckOut</Text>
 						</TouchableOpacity>
 					</View>
 				</View>

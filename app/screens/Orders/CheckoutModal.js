@@ -2,32 +2,31 @@ import React from "react";
 import { Button, Text, View, StyleSheet, TouchableOpacity } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import NavigationContainer from "@react-navigation/native";
-import createMaterialTopTabNavigator from "@react-navigation/material-top-tabs";
-
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 
 function Cart() {
 	<View
 		style={{
 			flex: 1,
-			justifyContent: 'center',
-			alignItems: 'center',
-			backgroundColor: 'cyan',
+			justifyContent: "center",
+			alignItems: "center",
+			backgroundColor: "cyan",
 		}}
 	>
 		<Text>Cart Page</Text>
-	</View>
+	</View>;
 }
 function CheckOut() {
 	<View
 		style={{
 			flex: 1,
-			justifyContent: 'center',
-			alignItems: 'center',
-			backgroundColor: 'cyan',
+			justifyContent: "center",
+			alignItems: "center",
+			backgroundColor: "cyan",
 		}}
 	>
 		<Text>CheckOut Page</Text>
-	</View>
+	</View>;
 }
 
 const Tab = createMaterialTopTabNavigator();
@@ -54,7 +53,7 @@ function CheckoutModal(props) {
 				/>
 			</Tab.Navigator>
 		</NavigationContainer>
-	)
+	);
 }
 
 const styles = StyleSheet.create({
@@ -62,6 +61,6 @@ const styles = StyleSheet.create({
 		position: "absolute",
 		right: 10,
 	},
-})
+});
 
 export default CheckoutModal;
