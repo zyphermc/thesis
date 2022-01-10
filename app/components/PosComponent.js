@@ -11,7 +11,7 @@ function PosComponent(props) {
 	};
 	const [count, setCount] = useState(0);
 	const onPressAdd = () => setCount(prevCount => prevCount + 1);
-	const onPressMinus = () => setCount(prevCount => prevCount - 1 ? 0 : 0);
+	const onPressMinus = () => setCount(prevCount => prevCount - 1, 0);
 
 	return (
 		<View style={styles.container}>
@@ -46,19 +46,15 @@ function PosComponent(props) {
 					alignItems: "flex-end",
 				}}
 			>
-				<TouchableOpacity
-					style={styles.buttonInside}
-					onPress={() => {
-						props.handleButtonAdd();
-					}}
-				>
-					<Ionicons name="cart-outline" size={35} color={"white"} />
-				</TouchableOpacity>
 				<View
 					style={{ flexDirection: 'row', alignItems: 'center' }}
 				>
 					<TouchableOpacity
-						onPress={onPressMinus}
+						onPress={() => {
+							if (count > 0) {
+								onPressMinus();
+							}
+						}}
 					>
 						<Ionicons name="remove-circle-outline" size={25} color={"black"} />
 					</TouchableOpacity>
@@ -76,6 +72,16 @@ function PosComponent(props) {
 					</TouchableOpacity>
 
 				</View>
+
+				<TouchableOpacity
+					style={styles.buttonInside}
+					onPress={() => {
+						props.getOrderedProduct(props.name, count, props.sellingPrice, props.vat, props.imageURI);
+						setCount(0);
+					}}
+				>
+					<Ionicons name="cart-outline" size={35} color={"white"} />
+				</TouchableOpacity>
 			</View>
 		</View>
 	);

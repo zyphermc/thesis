@@ -80,10 +80,6 @@ function OrderScreen({ route }) {
 		//add to cart
 	};
 
-	const number1 = () => {
-		//button
-	};
-
 	const handleOpenModal = () => {
 		//open add ingredient modal
 		SetModalOpen(true);
@@ -101,6 +97,36 @@ function OrderScreen({ route }) {
 
 		SetFilteredProducts(searchData);
 	};
+
+	let OrderedProduct = {
+		productName: "",
+		quantity: "",
+		sellingPrice: "",
+		vat: "",
+		imageURI: "",
+	}
+	const getOrderedProduct = (productName, quantity, sellingPrice, vat, imageURI) => {
+		const testOrder = orderProductList.findIndex((order) => {
+			return order.productName.includes(productName);
+		});
+		if (testOrder != -1) {
+			orderProductList[testOrder].quantity += quantity;
+		}
+		else {
+			if (quantity > 0) {
+				OrderedProduct = {
+					productName: productName,
+					quantity: quantity,
+					sellingPrice: sellingPrice,
+					vat: vat,
+					imageURI: imageURI,
+				}
+				orderProductList.push(OrderedProduct);
+			}
+		}
+	}
+	let orderProductList = []
+
 
 	function ShowProductsComponent() {
 		if (isLoading) {
@@ -125,7 +151,8 @@ function OrderScreen({ route }) {
 							sellingPrice={item.product_sellingPrice}
 							imageURI={item.product_imageURI}
 							handleButtonAdd={handleButtonAdd}
-							number1={number1}
+							getOrderedProduct={getOrderedProduct}
+							vat={item.product_vatPercent}
 						/>
 					)}
 				/>
@@ -156,7 +183,10 @@ function OrderScreen({ route }) {
 						<TouchableOpacity
 							style={styles.addItemButtonContainer}
 							onPress={() => {
-								navigation.navigate("Tab");
+								navigation.navigate("Tab", {
+									products: products,
+									orderProductList: orderProductList,
+								});
 							}}
 						>
 							<Ionicons name="add-outline" size={22} color={"white"} />

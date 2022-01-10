@@ -93,23 +93,30 @@ function DrawerNavigation(props) {
 
 const Tab = createMaterialTopTabNavigator();
 
-function TabNavigation() {
+function TabNavigation(props) {
+	const { products, orderProductList } = props.route.params;
 	return (
 		<Tab.Navigator
 			initialRouteName="Cart"
 			screenOptions={{
 				activeTintColor: "cyan",
 				labelStyle: { fontSize: 12 },
+				tabBarStyle: { marginTop: 20 }
 			}}
 		>
 			<Tab.Screen
 				name="Cart"
 				component={Cart}
+				initialParams={{
+					products: products,
+					orderProductList: orderProductList
+				}}
 				options={{ tabBarLabel: "Cart", title: "Cart" }}
 			/>
 			<Tab.Screen
 				name="CheckOut"
 				component={CheckOut}
+				initialParams={{ products: products }}
 				options={{ tabBarLabel: "CheckOut", title: "CheckOut" }}
 			/>
 		</Tab.Navigator>
