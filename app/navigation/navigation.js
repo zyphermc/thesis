@@ -13,6 +13,7 @@ import HomeScreen from "../screens/Home/HomeScreen";
 import InventoryScreen from "../screens/Inventory/InventoryScreen";
 import OrderScreen from "../screens/Orders/OrderScreen";
 import CustomDrawer from "../components/CustomDrawer";
+import Cart from "../screens/Orders/Cart";
 
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -90,11 +91,12 @@ function DrawerNavigation(props) {
 }
 
 const Tab = createMaterialTopTabNavigator();
+
 function TabNavigation() {
-	<NavigationContainer>
+	return (
 		<Tab.Navigator
 			initialRouteName="Cart"
-			tabBarOptions={{
+			screenOptions={{
 				activeTintColor: "cyan",
 				labelStyle: { fontSize: 12 },
 			}}
@@ -102,15 +104,10 @@ function TabNavigation() {
 			<Tab.Screen
 				name="Cart"
 				component={Cart}
-				options={{ tabBarLabel: "Cart" }}
-			/>
-			<Tab.Screen
-				name="CheckOut"
-				component={CheckOut}
-				options={{ tabBarLabel: "CheckOut" }}
+				options={{ tabBarLabel: "Cart", title: "Cart" }}
 			/>
 		</Tab.Navigator>
-	</NavigationContainer>;
+	);
 }
 
 export default StackNavigation;
