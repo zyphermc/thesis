@@ -355,8 +355,8 @@ const styles = StyleSheet.create({
 		borderColor: "#66D5F8",
 	},
 	input: {
+		flex: 1,
 		alignSelf: "flex-start",
-		width: "100%",
 		height: 50,
 		padding: 10,
 		fontSize: 20,

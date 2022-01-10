@@ -101,7 +101,6 @@ function ViewProductModal(props) {
 				price: productData.product_sellingPrice,
 				vatPercent: productData.product_vatPercent,
 				imageURI: productData.product_imageURI,
-				safetyStock: productData.safety_stock,
 				recipe: productData.recipe,
 			};
 
@@ -117,12 +116,72 @@ function ViewProductModal(props) {
 						{(props) => (
 							<View>
 								<View style={styles.infoContainer}>
-									<Text style={styles.infoText}>Name:</Text>
+									<Text style={styles.infoText}>Name: </Text>
 									<TextInput
 										style={styles.input}
 										placeholder="Product Name"
 										onChangeText={props.handleChange("name")}
 										defaultValue={productData.product_name}
+										editable={isEditable}
+									/>
+								</View>
+								<View style={styles.infoContainer}>
+									<Text style={styles.infoText}>Category: </Text>
+									<TextInput
+										style={styles.input}
+										placeholder="Product Category"
+										onChangeText={props.handleChange("category")}
+										defaultValue={productData.product_category}
+										editable={isEditable}
+									/>
+								</View>
+								<View style={styles.infoContainer}>
+									<Text style={styles.infoText}>Description: </Text>
+									<TextInput
+										style={styles.input}
+										placeholder="Product Description"
+										onChangeText={props.handleChange("description")}
+										defaultValue={productData.product_description}
+										editable={isEditable}
+									/>
+								</View>
+								<View style={styles.infoContainer}>
+									<Text style={styles.infoText}>Quantity: </Text>
+									<TextInput
+										style={styles.input}
+										placeholder="Product Quantity"
+										onChangeText={props.handleChange("quantity")}
+										defaultValue={productData.product_quantity.toString()}
+										editable={isEditable}
+									/>
+								</View>
+								<View style={styles.infoContainer}>
+									<Text style={styles.infoText}>Product Price: </Text>
+									<TextInput
+										style={styles.input}
+										placeholder="Product Price"
+										onChangeText={props.handleChange("price")}
+										defaultValue={productData.product_sellingPrice.toString()}
+										editable={isEditable}
+									/>
+								</View>
+								<View style={styles.infoContainer}>
+									<Text style={styles.infoText}>VAT %: </Text>
+									<TextInput
+										style={styles.input}
+										placeholder="VAT %"
+										onChangeText={props.handleChange("vatPercent")}
+										defaultValue={productData.product_vatPercent.toString()}
+										editable={isEditable}
+									/>
+								</View>
+								<View style={styles.infoContainer}>
+									<Text style={styles.infoText}>Image Link: </Text>
+									<TextInput
+										style={styles.input}
+										placeholder="Image URI"
+										onChangeText={props.handleChange("imageURI")}
+										defaultValue={productData.product_imageURI.toString()}
 										editable={isEditable}
 									/>
 								</View>
@@ -236,10 +295,10 @@ const styles = StyleSheet.create({
 		borderColor: "#66D5F8",
 	},
 	input: {
+		flex: 1,
 		alignSelf: "flex-start",
-		width: "100%",
 		height: 50,
-		padding: 10,
+		marginRight: 15,
 		fontSize: 20,
 		borderRadius: 8,
 	},
