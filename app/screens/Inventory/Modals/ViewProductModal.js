@@ -24,6 +24,9 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 //Forms
 import { Formik, Field, FieldArray } from "formik";
 
+//Dropdown Menu
+import { Picker } from "@react-native-picker/picker";
+
 import { db } from "../../../../firebase-config";
 
 function ViewProductModal(props) {
@@ -69,7 +72,7 @@ function ViewProductModal(props) {
 	}, []);
 
 	const AddToFirestore = async (data) => {
-		await setDoc(
+		await updateDoc(
 			doc(db, "products", data.name),
 			{
 				product_name: data.name,
@@ -79,9 +82,37 @@ function ViewProductModal(props) {
 				product_sellingPrice: parseInt(data.price),
 				product_vatPercent: parseInt(data.vatPercent),
 				product_imageURI: data.imageURI,
+				recipe: data.recipe,
 			},
 			{ merge: true }
 		);
+	};
+
+	let newRecipe = [];
+
+	const ManipulateRecipe = (action) => {
+		let recipeTemplate = {
+			name: "",
+			amount: "",
+		};
+
+		if (action === "log") {
+			console.log(productData.recipe);
+		} else if (action === "add") {
+			// pseudocode for updating recipe of product in database (food)
+			// 1. Get product recipe and display it in fields
+			// 2. When submit is clicked, get those data and store it in
+			//    an object array with 'name' and 'amount'
+			// 3. updateDoc with the new object array for recipe
+
+			recipeTemplate.name = "Garlic";
+			recipeTemplate.amount = "80";
+			newRecipe.push(recipeTemplate);
+
+			console.log(newRecipe);
+		} else if (action === "remove") {
+			//remove from recipe array
+		}
 	};
 
 	const ShowHistoryLog = () => {
@@ -91,7 +122,7 @@ function ViewProductModal(props) {
 
 	function FormComponent(props) {
 		if (typeof productData.product_name != "undefined") {
-			console.log(ingredientsNames);
+			//console.log(ingredientsNames);
 
 			const initialValues = {
 				name: productData.product_name,
@@ -111,6 +142,8 @@ function ViewProductModal(props) {
 						onSubmit={(values) => {
 							console.log(values);
 							AddToFirestore(values);
+
+							//ManipulateRecipe("add");
 						}}
 					>
 						{(props) => (
@@ -185,6 +218,88 @@ function ViewProductModal(props) {
 										editable={isEditable}
 									/>
 								</View>
+								{props.values.category != "Drinks" ? (
+									<View style={styles.recipeContainer}>
+										<View
+											style={{
+												flexDirection: "row",
+												justifyContent: "space-between",
+											}}
+										>
+											<Text style={styles.infoText}>Recipe:</Text>
+											<TouchableOpacity
+												style={{
+													justifyContent: "center",
+													alignItems: "center",
+												}}
+												onPress={() => {
+													console.log("added in array");
+												}}
+											>
+												<Ionicons
+													name="add-circle-outline"
+													size={25}
+													color={"green"}
+												/>
+											</TouchableOpacity>
+										</View>
+										{props.values.recipe.map((ingredient, index) => {
+											return (
+												<View key={index} style={styles.recipeIngredient}>
+													<Picker
+														style={{ height: 40, width: 140 }}
+														enabled={isEditable}
+														selectedValue={ingredient.name}
+														mode="dropdown"
+														onValueChange={props.handleChange(
+															`recipe[${index}].name`
+														)}
+													>
+														{ingredientsNames.map((name) => {
+															return (
+																<Picker.Item
+																	label={name.toString()}
+																	value={name.toString()}
+																	key={name.toString()}
+																/>
+															);
+														})}
+													</Picker>
+
+													<TextInput
+														style={styles.input}
+														placeholder="Amount"
+														onChangeText={(val) => {
+															props.setFieldValue(
+																`recipe[${index}].amount`,
+																parseInt(val)
+															);
+														}}
+														defaultValue={ingredient.amount.toString()}
+														editable={isEditable}
+													/>
+													<TouchableOpacity
+														style={{
+															justifyContent: "center",
+															alignItems: "center",
+														}}
+														onPress={() => {
+															console.log("removed from array");
+														}}
+													>
+														<Ionicons
+															name="remove-circle-outline"
+															size={25}
+															color={"red"}
+														/>
+													</TouchableOpacity>
+												</View>
+											);
+										})}
+									</View>
+								) : (
+									<></>
+								)}
 
 								<TouchableOpacity
 									onPress={() => {
@@ -310,6 +425,18 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		backgroundColor: "#67BA64",
 		borderRadius: 8,
+	},
+	recipeContainer: {
+		flex: 1,
+		marginHorizontal: 5,
+		backgroundColor: "#ddd",
+		padding: 5,
+		borderColor: "#C7D02F",
+		borderWidth: 1,
+	},
+	recipeIngredient: {
+		marginLeft: 20,
+		flexDirection: "row",
 	},
 });
 export default ViewProductModal;
