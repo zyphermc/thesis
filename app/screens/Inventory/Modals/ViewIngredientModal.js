@@ -24,11 +24,6 @@ function ViewIngredientModal(props) {
 	const [ingredientData, SetIngredientData] = useState([]);
 	const [isEditable, SetIsEditable] = useState(false);
 
-	const ShowHistoryLog = () => {
-		//OPEN MODAL DRAWER THAT SHOWS TRANSACTION HISTORY
-		console.log("History Shown");
-	};
-
 	useEffect(() => {
 		let isMounted = true;
 
@@ -49,6 +44,11 @@ function ViewIngredientModal(props) {
 			isMounted = false;
 		};
 	}, []);
+
+	const ShowHistoryLog = () => {
+		//OPEN MODAL DRAWER THAT SHOWS TRANSACTION HISTORY
+		console.log("History Shown");
+	};
 
 	const AddToFirestore = async (data) => {
 		await updateDoc(
@@ -355,8 +355,8 @@ const styles = StyleSheet.create({
 		borderColor: "#66D5F8",
 	},
 	input: {
+		flex: 1,
 		alignSelf: "flex-start",
-		width: "100%",
 		height: 50,
 		padding: 10,
 		fontSize: 20,
