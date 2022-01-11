@@ -22,7 +22,7 @@ import {
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 //Forms
-import { Formik, Field, FieldArray } from "formik";
+import { Formik } from "formik";
 
 //Dropdown Menu
 import { Picker } from "@react-native-picker/picker";
@@ -33,6 +33,7 @@ function ViewProductModal(props) {
 	const [productData, SetProductData] = useState([]);
 	const [isEditable, SetIsEditable] = useState(false);
 	const [ingredientsNames, SetIngredientNames] = useState([]);
+	const measurements = ["grams", "mL"];
 
 	useEffect(async () => {
 		let isMounted = true;
@@ -88,33 +89,6 @@ function ViewProductModal(props) {
 		);
 	};
 
-	let newRecipe = [];
-
-	const ManipulateRecipe = (action) => {
-		let recipeTemplate = {
-			name: "",
-			amount: "",
-		};
-
-		if (action === "log") {
-			console.log(productData.recipe);
-		} else if (action === "add") {
-			// pseudocode for updating recipe of product in database (food)
-			// 1. Get product recipe and display it in fields
-			// 2. When submit is clicked, get those data and store it in
-			//    an object array with 'name' and 'amount'
-			// 3. updateDoc with the new object array for recipe
-
-			recipeTemplate.name = "Garlic";
-			recipeTemplate.amount = "80";
-			newRecipe.push(recipeTemplate);
-
-			console.log(newRecipe);
-		} else if (action === "remove") {
-			//remove from recipe array
-		}
-	};
-
 	const ShowHistoryLog = () => {
 		//OPEN MODAL DRAWER THAT SHOWS TRANSACTION HISTORY
 		console.log("History Shown");
@@ -122,8 +96,6 @@ function ViewProductModal(props) {
 
 	function FormComponent(props) {
 		if (typeof productData.product_name != "undefined") {
-			//console.log(ingredientsNames);
-
 			const initialValues = {
 				name: productData.product_name,
 				description: productData.product_description,
@@ -142,8 +114,6 @@ function ViewProductModal(props) {
 						onSubmit={(values) => {
 							console.log(values);
 							AddToFirestore(values);
-
-							//ManipulateRecipe("add");
 						}}
 					>
 						{(props) => (
@@ -176,6 +146,7 @@ function ViewProductModal(props) {
 										onChangeText={props.handleChange("description")}
 										defaultValue={productData.product_description}
 										editable={isEditable}
+										selection={{ start: 0, end: 0 }}
 									/>
 								</View>
 								<View style={styles.infoContainer}>
@@ -216,6 +187,7 @@ function ViewProductModal(props) {
 										onChangeText={props.handleChange("imageURI")}
 										defaultValue={productData.product_imageURI.toString()}
 										editable={isEditable}
+										selection={{ start: 0, end: 0 }}
 									/>
 								</View>
 								{props.values.category != "Drinks" ? (
@@ -227,21 +199,6 @@ function ViewProductModal(props) {
 											}}
 										>
 											<Text style={styles.infoText}>Recipe:</Text>
-											<TouchableOpacity
-												style={{
-													justifyContent: "center",
-													alignItems: "center",
-												}}
-												onPress={() => {
-													console.log("added in array");
-												}}
-											>
-												<Ionicons
-													name="add-circle-outline"
-													size={25}
-													color={"green"}
-												/>
-											</TouchableOpacity>
 										</View>
 										{props.values.recipe.map((ingredient, index) => {
 											return (
@@ -278,27 +235,144 @@ function ViewProductModal(props) {
 														defaultValue={ingredient.amount.toString()}
 														editable={isEditable}
 													/>
-													<TouchableOpacity
-														style={{
-															justifyContent: "center",
-															alignItems: "center",
-														}}
-														onPress={() => {
-															console.log("removed from array");
-														}}
+
+													<Picker
+														style={{ height: 40, width: 140 }}
+														enabled={isEditable}
+														selectedValue={ingredient.measureType}
+														mode="dropdown"
+														onValueChange={props.handleChange(
+															`recipe[${index}].measureType`
+														)}
 													>
-														<Ionicons
-															name="remove-circle-outline"
-															size={25}
-															color={"red"}
-														/>
-													</TouchableOpacity>
+														{measurements.map((measureType) => {
+															return (
+																<Picker.Item
+																	label={measureType.toString()}
+																	value={measureType.toString()}
+																	key={measureType.toString()}
+																/>
+															);
+														})}
+													</Picker>
 												</View>
 											);
 										})}
 									</View>
 								) : (
-									<></>
+									<View style={styles.recipeContainer}>
+										<View
+											style={{
+												flexDirection: "row",
+												justifyContent: "space-between",
+											}}
+										>
+											<Text style={styles.infoText}>Recipes:</Text>
+										</View>
+
+										{props.values.recipe.map((myRecipe, indexRecipe) => {
+											return (
+												<View key={indexRecipe} style={{ padding: 10 }}>
+													<Picker
+														style={{
+															height: 40,
+															width: 140,
+															backgroundColor: "gray",
+														}}
+														enabled={isEditable}
+														selectedValue={myRecipe.size}
+														mode="dropdown"
+														onValueChange={props.handleChange(
+															`recipe[${indexRecipe}].size`
+														)}
+													>
+														<Picker.Item
+															label={"Large"}
+															value={"large"}
+															key={"large"}
+														/>
+														<Picker.Item
+															label={"Medium"}
+															value={"medium"}
+															key={"medium"}
+														/>
+														<Picker.Item
+															label={"Small"}
+															value={"small"}
+															key={"small"}
+														/>
+													</Picker>
+
+													{myRecipe.ingredients.map((myIngredient, index) => {
+														return (
+															<View
+																key={index}
+																style={{
+																	flexDirection: "row",
+																	padding: 10,
+																	marginBottom: 10,
+																}}
+															>
+																<Picker
+																	style={{ height: 40, width: 140 }}
+																	enabled={isEditable}
+																	selectedValue={myIngredient.name}
+																	mode="dropdown"
+																	onValueChange={props.handleChange(
+																		`recipe[${indexRecipe}].ingredients[${index}].name`
+																	)}
+																>
+																	{ingredientsNames.map((name) => {
+																		return (
+																			<Picker.Item
+																				label={name.toString()}
+																				value={name.toString()}
+																				key={name.toString()}
+																			/>
+																		);
+																	})}
+																</Picker>
+																<TextInput
+																	style={styles.input}
+																	placeholder="Amount"
+																	onChangeText={(val) => {
+																		props.setFieldValue(
+																			`recipe[${indexRecipe}].ingredients[${index}].amount`,
+																			parseInt(val)
+																		);
+																	}}
+																	defaultValue={myIngredient.amount.toString()}
+																	editable={isEditable}
+																/>
+																<Picker
+																	style={{
+																		height: 40,
+																		width: 140,
+																	}}
+																	enabled={isEditable}
+																	selectedValue={myIngredient.measureType}
+																	mode="dropdown"
+																	onValueChange={props.handleChange(
+																		`recipe[${indexRecipe}].ingredients[${index}].measureType`
+																	)}
+																>
+																	{measurements.map((measureType) => {
+																		return (
+																			<Picker.Item
+																				label={measureType.toString()}
+																				value={measureType.toString()}
+																				key={measureType.toString()}
+																			/>
+																		);
+																	})}
+																</Picker>
+															</View>
+														);
+													})}
+												</View>
+											);
+										})}
+									</View>
 								)}
 
 								<TouchableOpacity

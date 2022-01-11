@@ -10,6 +10,7 @@ export default function App() {
 	LogBox.ignoreLogs([
 		"Setting a timer",
 		"AsyncStorage has been extracted from react-native core and will be removed in a future release.",
+		"Warning: Can't perform a React state update on an unmounted component.",
 	]);
 
 	return <Navigation />;
