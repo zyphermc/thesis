@@ -9,6 +9,7 @@ import {
 	Modal,
 	ActivityIndicator,
 	ImageBackground,
+	Alert,
 } from "react-native";
 
 import {
@@ -169,6 +170,15 @@ function InventoryScreen({ route }) {
 		SetViewModalOpen(true);
 	};
 
+	const confirmDelete = (name) =>
+		Alert.alert("ATTENTION", `Are you sure to delete ${name}?`, [
+			{
+				text: "Cancel",
+				style: "cancel",
+			},
+			{ text: "Confirm", onPress: () => handleButtonDelete(name) },
+		]);
+
 	const handleButtonDelete = async (name) => {
 		//if needed: show confirmation message then
 		//delete document from database
@@ -236,7 +246,7 @@ function InventoryScreen({ route }) {
 								imageURI={item.imageURI}
 								stock_status={item.stock_status}
 								handleButtonView={handleButtonView}
-								handleButtonDelete={handleButtonDelete}
+								handleButtonDelete={confirmDelete}
 							/>
 						)}
 					/>
@@ -271,7 +281,7 @@ function InventoryScreen({ route }) {
 								sellingPrice={item.product_sellingPrice}
 								imageURI={item.product_imageURI}
 								handleButtonView={handleButtonView}
-								handleButtonDelete={handleButtonDelete}
+								handleButtonDelete={confirmDelete}
 							/>
 						)}
 					/>
