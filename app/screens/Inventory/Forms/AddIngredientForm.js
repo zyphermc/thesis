@@ -10,6 +10,9 @@ import { Formik } from "formik";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../../../firebase-config";
 
+//Dropdown Menu
+import { Picker } from "@react-native-picker/picker";
+
 function AddIngredientForm(props) {
 	const initialValues = {
 		name: "",
@@ -24,6 +27,15 @@ function AddIngredientForm(props) {
 		annualHoldingCost: "",
 		annualOrderCost: "",
 	};
+
+	const categories = [
+		"Herbs",
+		"Spices",
+		"Vegetable",
+		"Seasoning",
+		"Fruit",
+		"Others",
+	];
 
 	const AddToFirestore = async (data) => {
 		await setDoc(
@@ -63,12 +75,22 @@ function AddIngredientForm(props) {
 							onChangeText={props.handleChange("name")}
 							value={props.values.name}
 						/>
-						<TextInput
-							style={styles.input}
-							placeholder="Category"
-							onChangeText={props.handleChange("category")}
-							value={props.values.category}
-						/>
+						<Picker
+							style={{ height: 40 }}
+							selectedValue={props.values.category}
+							mode="dropdown"
+							onValueChange={props.handleChange("category")}
+						>
+							{categories.map((category) => {
+								return (
+									<Picker.Item
+										label={category.toString()}
+										value={category.toString()}
+										key={category.toString()}
+									/>
+								);
+							})}
+						</Picker>
 						<TextInput
 							style={styles.input}
 							placeholder="Quantity"
