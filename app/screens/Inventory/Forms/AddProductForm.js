@@ -92,25 +92,40 @@ function AddProductForm(props) {
 		drinkRecipe: drinkRecipeData,
 	};
 
-	const AddToFirestore = async (data) => {
-		await setDoc(
-			doc(db, "products", data.name),
-			{
-				product_name: data.name,
-				product_category: data.category,
-				product_description: data.description,
-				product_quantity: parseInt(data.quantity),
-				product_sellingPrice: parseInt(data.price),
-				product_vatPercent: parseInt(data.vatPercent),
-				product_imageURI: data.imageURI,
-				recipe: data.recipe,
-			},
-			{ merge: true }
-		);
-	};
+	const drinkSizes = ["Small", "Medium", "Large"];
 
-	const testFunction = (data) => {
-		console.log(data);
+	const AddToFirestore = async (data) => {
+		if (currentCategory === "Food") {
+			await setDoc(
+				doc(db, "products", data.name),
+				{
+					product_name: data.name,
+					product_category: data.category,
+					product_description: data.description,
+					product_quantity: parseInt(data.quantity),
+					product_sellingPrice: parseInt(data.price),
+					product_vatPercent: parseInt(data.vatPercent),
+					product_imageURI: data.imageURI,
+					recipe: data.foodRecipe,
+				},
+				{ merge: true }
+			);
+		} else {
+			await setDoc(
+				doc(db, "products", data.name),
+				{
+					product_name: data.name,
+					product_category: data.category,
+					product_description: data.description,
+					product_quantity: parseInt(data.quantity),
+					selling_prices: data.selling_prices,
+					product_vatPercent: parseInt(data.vatPercent),
+					product_imageURI: data.imageURI,
+					recipe: data.drinkRecipe,
+				},
+				{ merge: true }
+			);
+		}
 	};
 
 	return (
@@ -157,6 +172,7 @@ function AddProductForm(props) {
 									SetCurrentCategory(val);
 								}}
 							>
+								<Picker.Item label="Select Category:" value="" />
 								{categories.map((category) => {
 									return (
 										<Picker.Item
@@ -208,6 +224,7 @@ function AddProductForm(props) {
 														`selling_prices[${pricesIndex}].size`
 													)}
 												>
+													<Picker.Item label="Select Size:" value="" />
 													<Picker.Item
 														label={"Large"}
 														value={"large"}
@@ -302,12 +319,13 @@ function AddProductForm(props) {
 												<View key={index} style={styles.recipeIngredient}>
 													<Picker
 														style={{ height: 40, width: 140 }}
-														selectedValue={props.values.foodRecipe[index].name}
+														selectedValue={ingredient.name}
 														mode="dropdown"
 														onValueChange={props.handleChange(
 															`foodRecipe[${index}].name`
 														)}
 													>
+														<Picker.Item label="Select Ingredient:" value="" />
 														{ingredientsNames.map((name) => {
 															return (
 																<Picker.Item
@@ -332,14 +350,13 @@ function AddProductForm(props) {
 
 													<Picker
 														style={{ flex: 1 }}
-														selectedValue={
-															props.values.foodRecipe[index].measureType
-														}
+														selectedValue={ingredient.measureType}
 														mode="dropdown"
 														onValueChange={props.handleChange(
 															`foodRecipe[${index}].measureType`
 														)}
 													>
+														<Picker.Item label="Select Size:" value="" />
 														{measurements.map((measureType) => {
 															return (
 																<Picker.Item
@@ -355,41 +372,72 @@ function AddProductForm(props) {
 									  })
 									: props.values.drinkRecipe.map((myRecipe, indexRecipe) => {
 											return (
-												<View key={indexRecipe} style={styles.recipeIngredient}>
-													<Picker
-														style={{ height: 40, width: 140 }}
-														selectedValue={myRecipe.size}
-														mode="dropdown"
-														onValueChange={props.handleChange(
-															`drinkRecipe[${indexRecipe}].size`
-														)}
-													>
-														<Picker.Item
-															label={"Large"}
-															value={"large"}
-															key={"large"}
-														/>
-														<Picker.Item
-															label={"Medium"}
-															value={"medium"}
-															key={"medium"}
-														/>
-														<Picker.Item
-															label={"Small"}
-															value={"small"}
-															key={"small"}
-														/>
-													</Picker>
-													{myRecipe.ingredients.map((myIngredient, index) => {
-														return (
-															<View
-																key={index}
-																style={{
-																	flexDirection: "row",
-																	padding: 10,
-																	marginBottom: 10,
+												<View key={indexRecipe} style={{ marginBottom: 10 }}>
+													<View style={{ flexDirection: "row" }}>
+														<Picker
+															style={{ height: 60, width: 140 }}
+															selectedValue={myRecipe.size}
+															mode="dropdown"
+															onValueChange={props.handleChange(
+																`drinkRecipe[${indexRecipe}].size`
+															)}
+														>
+															<Picker.Item label="Select Size:" value="" />
+															<Picker.Item
+																label={"Large"}
+																value={"large"}
+																key={"large"}
+															/>
+															<Picker.Item
+																label={"Medium"}
+																value={"medium"}
+																key={"medium"}
+															/>
+															<Picker.Item
+																label={"Small"}
+																value={"small"}
+																key={"small"}
+															/>
+														</Picker>
+														<View
+															style={{
+																flexDirection: "row",
+																alignItems: "center",
+															}}
+														>
+															<TouchableOpacity
+																onPress={() => {
+																	props.values.drinkRecipe[
+																		indexRecipe
+																	].ingredients.push(foodRecipeTemplate);
+																	onPressAdd(); //this just refreshes the page lmao
 																}}
 															>
+																<Ionicons
+																	name="add-circle-outline"
+																	size={25}
+																	color={"green"}
+																/>
+															</TouchableOpacity>
+															<TouchableOpacity
+																onPress={() => {
+																	props.values.drinkRecipe[
+																		indexRecipe
+																	].ingredients.pop();
+																	onPressAdd(); //this just refreshes the page lmao
+																}}
+															>
+																<Ionicons
+																	name="remove-circle-outline"
+																	size={25}
+																	color={"red"}
+																/>
+															</TouchableOpacity>
+														</View>
+													</View>
+													{myRecipe.ingredients.map((myIngredient, index) => {
+														return (
+															<View key={index} style={styles.recipeIngredient}>
 																<Picker
 																	style={{ height: 40, width: 140 }}
 																	selectedValue={myIngredient.name}
@@ -398,6 +446,10 @@ function AddProductForm(props) {
 																		`drinkRecipe[${indexRecipe}].ingredients[${index}].name`
 																	)}
 																>
+																	<Picker.Item
+																		label="Select Ingredient:"
+																		value=""
+																	/>
 																	{ingredientsNames.map((name) => {
 																		return (
 																			<Picker.Item
@@ -422,7 +474,7 @@ function AddProductForm(props) {
 																<Picker
 																	style={{
 																		height: 40,
-																		width: 140,
+																		width: 100,
 																	}}
 																	selectedValue={myIngredient.measureType}
 																	mode="dropdown"
@@ -430,6 +482,10 @@ function AddProductForm(props) {
 																		`drinkRecipe[${indexRecipe}].ingredients[${index}].measureType`
 																	)}
 																>
+																	<Picker.Item
+																		label="Select Measure:"
+																		value=""
+																	/>
 																	{measurements.map((measureType) => {
 																		return (
 																			<Picker.Item

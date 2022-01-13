@@ -81,6 +81,7 @@ function AddIngredientForm(props) {
 							mode="dropdown"
 							onValueChange={props.handleChange("category")}
 						>
+							<Picker.Item label="Select Category:" value="" />
 							{categories.map((category) => {
 								return (
 									<Picker.Item
