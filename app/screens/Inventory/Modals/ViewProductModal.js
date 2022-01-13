@@ -73,20 +73,37 @@ function ViewProductModal(props) {
 	}, []);
 
 	const AddToFirestore = async (data) => {
-		await updateDoc(
-			doc(db, "products", data.name),
-			{
-				product_name: data.name,
-				product_category: data.category,
-				product_description: data.description,
-				product_quantity: parseInt(data.quantity),
-				product_sellingPrice: parseInt(data.price),
-				product_vatPercent: parseInt(data.vatPercent),
-				product_imageURI: data.imageURI,
-				recipe: data.recipe,
-			},
-			{ merge: true }
-		);
+		if (productData.category === "Food") {
+			await updateDoc(
+				doc(db, "products", data.name),
+				{
+					product_name: data.name,
+					product_category: data.category,
+					product_description: data.description,
+					product_quantity: parseInt(data.quantity),
+					product_sellingPrice: parseInt(data.sellingPrice),
+					product_vatPercent: parseInt(data.vatPercent),
+					product_imageURI: data.imageURI,
+					recipe: data.recipe,
+				},
+				{ merge: true }
+			);
+		} else {
+			await updateDoc(
+				doc(db, "products", data.name),
+				{
+					product_name: data.name,
+					product_category: data.category,
+					product_description: data.description,
+					product_quantity: parseInt(data.quantity),
+					selling_prices: data.selling_prices,
+					product_vatPercent: parseInt(data.vatPercent),
+					product_imageURI: data.imageURI,
+					recipe: data.recipe,
+				},
+				{ merge: true }
+			);
+		}
 	};
 
 	const ShowHistoryLog = () => {
@@ -96,16 +113,41 @@ function ViewProductModal(props) {
 
 	function FormComponent(props) {
 		if (typeof productData.product_name != "undefined") {
-			const initialValues = {
-				name: productData.product_name,
-				description: productData.product_description,
-				category: productData.product_category,
-				quantity: productData.product_quantity,
-				price: productData.product_sellingPrice,
-				vatPercent: productData.product_vatPercent,
-				imageURI: productData.product_imageURI,
-				recipe: productData.recipe,
+			let initialValues = {
+				name: "",
+				description: "",
+				category: "",
+				quantity: "",
+				price: "",
+				selling_prices: "",
+				vatPercent: "",
+				imageURI: "",
+				recipe: "",
 			};
+
+			if (productData.category === "Food") {
+				initialValues = {
+					name: productData.product_name,
+					description: productData.product_description,
+					category: productData.product_category,
+					quantity: productData.product_quantity,
+					price: productData.sellingPrice,
+					vatPercent: productData.product_vatPercent,
+					imageURI: productData.product_imageURI,
+					recipe: productData.recipe,
+				};
+			} else {
+				initialValues = {
+					name: productData.product_name,
+					description: productData.product_description,
+					category: productData.product_category,
+					quantity: productData.product_quantity,
+					selling_prices: productData.selling_prices,
+					vatPercent: productData.product_vatPercent,
+					imageURI: productData.product_imageURI,
+					recipe: productData.recipe,
+				};
+			}
 
 			return (
 				<ScrollView>
@@ -135,7 +177,7 @@ function ViewProductModal(props) {
 										placeholder="Product Category"
 										onChangeText={props.handleChange("category")}
 										defaultValue={productData.product_category}
-										editable={isEditable}
+										editable={false}
 									/>
 								</View>
 								<View style={styles.infoContainer}>
@@ -159,15 +201,78 @@ function ViewProductModal(props) {
 										editable={isEditable}
 									/>
 								</View>
-								<View style={styles.infoContainer}>
+								<View
+									style={{
+										flex: 1,
+										borderWidth: 1,
+										borderColor: "#C7D02F",
+										backgroundColor: "#ddd",
+										marginHorizontal: 5,
+										marginVertical: 2,
+									}}
+								>
 									<Text style={styles.infoText}>Product Price: </Text>
-									<TextInput
-										style={styles.input}
-										placeholder="Product Price"
-										onChangeText={props.handleChange("price")}
-										defaultValue={productData.product_sellingPrice.toString()}
-										editable={isEditable}
-									/>
+									{props.values.category === "Food" ? (
+										<TextInput
+											style={styles.input}
+											placeholder="Product Price"
+											onChangeText={props.handleChange("price")}
+											defaultValue={productData.product_sellingPrice.toString()}
+											editable={isEditable}
+										/>
+									) : (
+										<View>
+											{props.values.selling_prices.map(
+												(prices, pricesIndex) => {
+													return (
+														<View
+															style={{ flexDirection: "row" }}
+															key={pricesIndex}
+														>
+															<Picker
+																style={{
+																	height: 40,
+																	width: 150,
+																	backgroundColor: "transparent",
+																}}
+																enabled={isEditable}
+																selectedValue={prices.size}
+																mode="dropdown"
+																onValueChange={props.handleChange(
+																	`selling_prices[${pricesIndex}].size`
+																)}
+															>
+																<Picker.Item
+																	label={"Large"}
+																	value={"large"}
+																	key={"large"}
+																/>
+																<Picker.Item
+																	label={"Medium"}
+																	value={"medium"}
+																	key={"medium"}
+																/>
+																<Picker.Item
+																	label={"Small"}
+																	value={"small"}
+																	key={"small"}
+																/>
+															</Picker>
+															<TextInput
+																style={{ flex: 1, fontSize: 20 }}
+																placeholder="Product Price"
+																onChangeText={props.handleChange(
+																	`selling_prices[${pricesIndex}].selling_price`
+																)}
+																defaultValue={prices.selling_price.toString()}
+																editable={isEditable}
+															/>
+														</View>
+													);
+												}
+											)}
+										</View>
+									)}
 								</View>
 								<View style={styles.infoContainer}>
 									<Text style={styles.infoText}>VAT %: </Text>

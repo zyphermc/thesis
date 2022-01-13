@@ -96,7 +96,7 @@ function Test(props) {
 			} else {
 				if (typeof size != "undefined") {
 					myProduct.recipe.map((recipe) => {
-						if (size === recipe.size) {
+						if (size.toLowerCase() === recipe.size) {
 							recipe.ingredients.map(async (ingredient) => {
 								//access ingredient document from firebase and deduct amount
 								const docRef = doc(db, "ingredients", ingredient.name);

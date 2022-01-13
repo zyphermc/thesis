@@ -25,9 +25,6 @@ function ProductItemComponent(props) {
 				<Text style={styles.textStyle}>Name: {props.name}</Text>
 				<Text style={styles.textStyle}>Category: {props.category}</Text>
 				<Text style={styles.textStyle}>Quantity: {props.quantity}</Text>
-				<Text style={styles.textStyle}>
-					Selling Price: ₱{props.sellingPrice}
-				</Text>
 				<Text
 					style={[
 						styles.textStyle,

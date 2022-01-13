@@ -6,6 +6,7 @@ import {
 	Text,
 	TouchableOpacity,
 	ScrollView,
+	Button,
 } from "react-native";
 import { Formik } from "formik";
 import { doc, collection, getDocs, setDoc } from "firebase/firestore";
@@ -66,10 +67,16 @@ function AddProductForm(props) {
 		],
 	};
 
+	let sellingPricesTemplate = [
+		{ size: "small", selling_price: "" },
+		{ size: "medium", selling_price: "" },
+		{ size: "large", selling_price: "" },
+	];
+
 	const [foodRecipeData, SetFoodRecipeData] = useState([foodRecipeTemplate]);
 	const [drinkRecipeData, SetDrinkRecipeData] = useState([drinkRecipeTemplate]);
 	const [currentCategory, SetCurrentCategory] = useState("Food");
-	const [count, setCount] = useState(0);
+	const [count, setCount] = useState(1);
 	const onPressAdd = () => setCount((prevCount) => prevCount + 1);
 
 	const initialValues = {
@@ -78,6 +85,7 @@ function AddProductForm(props) {
 		description: "",
 		quantity: "", //to be removed, going to be automatically calculated based on recipe
 		price: "",
+		selling_prices: sellingPricesTemplate,
 		vatPercent: "",
 		imageURI: "",
 		foodRecipe: foodRecipeData,
@@ -95,30 +103,14 @@ function AddProductForm(props) {
 				product_sellingPrice: parseInt(data.price),
 				product_vatPercent: parseInt(data.vatPercent),
 				product_imageURI: data.imageURI,
-				//recipe: data.recipe,
+				recipe: data.recipe,
 			},
 			{ merge: true }
 		);
 	};
 
-	const addRecipe = (category) => {
-		if (category === "Food") {
-			let newRecipe = foodRecipeData.concat(foodRecipeTemplate);
-			SetFoodRecipeData(newRecipe);
-		} else {
-			let newRecipe = drinkRecipeData.concat(drinkRecipeTemplate);
-			SetDrinkRecipeData(newRecipe);
-		}
-	};
-
-	const removeRecipe = (category) => {
-		if (category === "Food") {
-			let newRecipe = foodRecipeData.pop();
-			SetFoodRecipeData(newRecipe);
-		} else {
-			let newRecipe = drinkRecipeData.pop();
-			SetDrinkRecipeData(newRecipe);
-		}
+	const testFunction = (data) => {
+		console.log(data);
 	};
 
 	return (
@@ -133,7 +125,7 @@ function AddProductForm(props) {
 						top: 5,
 					}}
 				>
-					Add Ingredient:
+					Add Product:
 				</Text>
 				<TouchableOpacity style={{ top: 4 }} onPress={props.closeModal}>
 					<Ionicons name="close-outline" size={40} color={"black"} />
@@ -188,13 +180,64 @@ function AddProductForm(props) {
 								value={props.values.quantity}
 								keyboardType="numeric"
 							/>
-							<TextInput
-								style={styles.input}
-								placeholder="Selling Price in ₱"
-								onChangeText={props.handleChange("price")}
-								value={props.values.price}
-								keyboardType="numeric"
-							/>
+							{currentCategory === "Food" ? (
+								<TextInput
+									style={styles.input}
+									placeholder="Selling Price in ₱"
+									onChangeText={props.handleChange("price")}
+									value={props.values.price}
+									keyboardType="numeric"
+								/>
+							) : (
+								<View>
+									<Text style={[styles.infoText, { marginTop: 5 }]}>
+										Product Prices:{" "}
+									</Text>
+									{props.values.selling_prices.map((prices, pricesIndex) => {
+										return (
+											<View style={{ flexDirection: "row" }} key={pricesIndex}>
+												<Picker
+													style={{
+														height: 40,
+														width: 150,
+														backgroundColor: "transparent",
+													}}
+													selectedValue={prices.size}
+													mode="dropdown"
+													onValueChange={props.handleChange(
+														`selling_prices[${pricesIndex}].size`
+													)}
+												>
+													<Picker.Item
+														label={"Large"}
+														value={"large"}
+														key={"large"}
+													/>
+													<Picker.Item
+														label={"Medium"}
+														value={"medium"}
+														key={"medium"}
+													/>
+													<Picker.Item
+														label={"Small"}
+														value={"small"}
+														key={"small"}
+													/>
+												</Picker>
+												<TextInput
+													style={{ flex: 1, fontSize: 20 }}
+													placeholder="Product Price"
+													onChangeText={props.handleChange(
+														`selling_prices[${pricesIndex}].selling_price`
+													)}
+													defaultValue={prices.selling_price.toString()}
+												/>
+											</View>
+										);
+									})}
+								</View>
+							)}
+
 							<TextInput
 								style={styles.input}
 								placeholder="VAT %"
@@ -220,8 +263,13 @@ function AddProductForm(props) {
 									<View style={{ flexDirection: "row" }}>
 										<TouchableOpacity
 											onPress={() => {
-												props.values.foodRecipe.push(foodRecipeTemplate);
-												addRecipe("Food");
+												if (currentCategory === "Food") {
+													props.values.foodRecipe.push(foodRecipeTemplate);
+												} else {
+													props.values.drinkRecipe.push(drinkRecipeTemplate);
+												}
+
+												onPressAdd(); //this just refreshes the page lmao
 											}}
 										>
 											<Ionicons
@@ -232,7 +280,11 @@ function AddProductForm(props) {
 										</TouchableOpacity>
 										<TouchableOpacity
 											onPress={() => {
-												props.values.foodRecipe.pop();
+												if (currentCategory === "Food") {
+													props.values.foodRecipe.pop();
+												} else {
+													props.values.drinkRecipe.pop();
+												}
 												onPressAdd(); //this just refreshes the page lmao
 											}}
 										>
@@ -244,66 +296,156 @@ function AddProductForm(props) {
 										</TouchableOpacity>
 									</View>
 								</View>
-								{currentCategory === "Food" ? (
-									props.values.foodRecipe.map((ingredient, index) => {
-										return (
-											<View key={index} style={styles.recipeIngredient}>
-												<Picker
-													style={{ height: 40, width: 140 }}
-													selectedValue={props.values.foodRecipe[index].name}
-													mode="dropdown"
-													onValueChange={props.handleChange(
-														`foodRecipe[${index}].name`
-													)}
-												>
-													{ingredientsNames.map((name) => {
+								{currentCategory === "Food"
+									? props.values.foodRecipe.map((ingredient, index) => {
+											return (
+												<View key={index} style={styles.recipeIngredient}>
+													<Picker
+														style={{ height: 40, width: 140 }}
+														selectedValue={props.values.foodRecipe[index].name}
+														mode="dropdown"
+														onValueChange={props.handleChange(
+															`foodRecipe[${index}].name`
+														)}
+													>
+														{ingredientsNames.map((name) => {
+															return (
+																<Picker.Item
+																	label={name.toString()}
+																	value={name.toString()}
+																	key={name.toString()}
+																/>
+															);
+														})}
+													</Picker>
+
+													<TextInput
+														style={styles.input}
+														placeholder="Amount"
+														onChangeText={(val) => {
+															props.setFieldValue(
+																`foodRecipe[${index}].amount`,
+																parseInt(val)
+															);
+														}}
+													/>
+
+													<Picker
+														style={{ flex: 1 }}
+														selectedValue={
+															props.values.foodRecipe[index].measureType
+														}
+														mode="dropdown"
+														onValueChange={props.handleChange(
+															`foodRecipe[${index}].measureType`
+														)}
+													>
+														{measurements.map((measureType) => {
+															return (
+																<Picker.Item
+																	label={measureType.toString()}
+																	value={measureType.toString()}
+																	key={measureType.toString()}
+																/>
+															);
+														})}
+													</Picker>
+												</View>
+											);
+									  })
+									: props.values.drinkRecipe.map((myRecipe, indexRecipe) => {
+											return (
+												<View key={indexRecipe} style={styles.recipeIngredient}>
+													<Picker
+														style={{ height: 40, width: 140 }}
+														selectedValue={myRecipe.size}
+														mode="dropdown"
+														onValueChange={props.handleChange(
+															`drinkRecipe[${indexRecipe}].size`
+														)}
+													>
+														<Picker.Item
+															label={"Large"}
+															value={"large"}
+															key={"large"}
+														/>
+														<Picker.Item
+															label={"Medium"}
+															value={"medium"}
+															key={"medium"}
+														/>
+														<Picker.Item
+															label={"Small"}
+															value={"small"}
+															key={"small"}
+														/>
+													</Picker>
+													{myRecipe.ingredients.map((myIngredient, index) => {
 														return (
-															<Picker.Item
-																label={name.toString()}
-																value={name.toString()}
-																key={name.toString()}
-															/>
+															<View
+																key={index}
+																style={{
+																	flexDirection: "row",
+																	padding: 10,
+																	marginBottom: 10,
+																}}
+															>
+																<Picker
+																	style={{ height: 40, width: 140 }}
+																	selectedValue={myIngredient.name}
+																	mode="dropdown"
+																	onValueChange={props.handleChange(
+																		`drinkRecipe[${indexRecipe}].ingredients[${index}].name`
+																	)}
+																>
+																	{ingredientsNames.map((name) => {
+																		return (
+																			<Picker.Item
+																				label={name.toString()}
+																				value={name.toString()}
+																				key={name.toString()}
+																			/>
+																		);
+																	})}
+																</Picker>
+																<TextInput
+																	style={styles.input}
+																	placeholder="Amount"
+																	onChangeText={(val) => {
+																		props.setFieldValue(
+																			`drinkRecipe[${indexRecipe}].ingredients[${index}].amount`,
+																			parseInt(val)
+																		);
+																	}}
+																	defaultValue={myIngredient.amount.toString()}
+																/>
+																<Picker
+																	style={{
+																		height: 40,
+																		width: 140,
+																	}}
+																	selectedValue={myIngredient.measureType}
+																	mode="dropdown"
+																	onValueChange={props.handleChange(
+																		`drinkRecipe[${indexRecipe}].ingredients[${index}].measureType`
+																	)}
+																>
+																	{measurements.map((measureType) => {
+																		return (
+																			<Picker.Item
+																				label={measureType.toString()}
+																				value={measureType.toString()}
+																				key={measureType.toString()}
+																			/>
+																		);
+																	})}
+																</Picker>
+															</View>
 														);
 													})}
-												</Picker>
-
-												<TextInput
-													style={styles.input}
-													placeholder="Amount"
-													onChangeText={(val) => {
-														props.setFieldValue(
-															`foodRecipe[${index}].amount`,
-															parseInt(val)
-														);
-													}}
-												/>
-
-												<Picker
-													style={{ flex: 1 }}
-													selectedValue={
-														props.values.foodRecipe[index].measureType
-													}
-													mode="dropdown"
-													onValueChange={props.handleChange(
-														`foodRecipe[${index}].measureType`
-													)}
-												>
-													{measurements.map((measureType) => {
-														return (
-															<Picker.Item
-																label={measureType.toString()}
-																value={measureType.toString()}
-																key={measureType.toString()}
-															/>
-														);
-													})}
-												</Picker>
-											</View>
-										);
-									})
-								) : (
-									<></>
-								)}
+												</View>
+											);
+									  })}
 							</View>
 							<TouchableOpacity
 								onPress={() => {
