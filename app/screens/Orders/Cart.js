@@ -15,8 +15,12 @@ function Cart(props) {
 	const { orderProductList } = props.route.params;
 	const [totalValue, setTotalValue] = useState(0);
 
-	const Tax = totalValue * 0.12;
-	const Subtotal = totalValue - Tax;
+	let Tax = 0;
+	let Subtotal = 0;
+
+	Tax = totalValue * 0.12;
+	Subtotal = totalValue - Tax;
+
 	let cashTendered = "";
 
 	const navigation = useNavigation();
@@ -153,6 +157,7 @@ function Cart(props) {
 						imageURI={item.imageURI}
 						quantity={item.quantity}
 						sellingPrice={item.sellingPrice}
+						size={item.size}
 						vat={item.vat}
 					/>
 				)}
