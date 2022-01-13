@@ -34,8 +34,6 @@ function OrderScreen({ route }) {
 	//Viewing Product or Ingredient State
 	const [isLoading, SetIsLoading] = useState(true);
 
-	const [modalOpen, SetModalOpen] = useState(false);
-
 	//Ingredients and Products Firebase reference
 	const productsCollectionRef = collection(db, "products");
 
@@ -80,11 +78,6 @@ function OrderScreen({ route }) {
 		//add to cart
 	};
 
-	const handleOpenModal = () => {
-		//open add ingredient modal
-		SetModalOpen(true);
-	};
-
 	const SearchNameProduct = (input) => {
 		const data = products;
 
@@ -98,21 +91,33 @@ function OrderScreen({ route }) {
 		SetFilteredProducts(searchData);
 	};
 
+	let orderProductList = [];
+
 	let OrderedProduct = {
 		productName: "",
 		quantity: "",
 		sellingPrice: "",
 		vat: "",
 		imageURI: "",
-	}
-	const getOrderedProduct = (productName, quantity, sellingPrice, vat, imageURI) => {
-		const testOrder = orderProductList.findIndex((order) => {
-			return order.productName.includes(productName);
+		size: "",
+	};
+
+	const getOrderedProduct = (
+		productName,
+		quantity,
+		sellingPrice,
+		vat,
+		imageURI,
+		size
+	) => {
+		const orderIndex = orderProductList.findIndex((order) => {
+			return (
+				order.productName.includes(productName) && order.size.includes(size)
+			);
 		});
-		if (testOrder != -1) {
-			orderProductList[testOrder].quantity += quantity;
-		}
-		else {
+		if (orderIndex != -1) {
+			orderProductList[orderIndex].quantity += quantity;
+		} else {
 			if (quantity > 0) {
 				OrderedProduct = {
 					productName: productName,
@@ -120,13 +125,16 @@ function OrderScreen({ route }) {
 					sellingPrice: sellingPrice,
 					vat: vat,
 					imageURI: imageURI,
-				}
+					size: size,
+				};
 				orderProductList.push(OrderedProduct);
 			}
 		}
-	}
-	let orderProductList = []
+	};
 
+	const ClearCart = () => {
+		orderProductList = [];
+	};
 
 	function ShowProductsComponent() {
 		if (isLoading) {
@@ -149,6 +157,7 @@ function OrderScreen({ route }) {
 							category={item.product_category}
 							quantity={item.product_quantity}
 							sellingPrice={item.product_sellingPrice}
+							selling_prices={item.selling_prices}
 							imageURI={item.product_imageURI}
 							handleButtonAdd={handleButtonAdd}
 							getOrderedProduct={getOrderedProduct}
@@ -190,7 +199,15 @@ function OrderScreen({ route }) {
 							}}
 						>
 							<Ionicons name="add-outline" size={22} color={"white"} />
-							<Text style={{ color: "white" }}>CheckOut</Text>
+							<Text style={{ color: "white" }}>Checkout</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							style={styles.addItemButtonContainer}
+							onPress={() => {
+								ClearCart();
+							}}
+						>
+							<Text style={{ color: "white" }}>Clear Cart</Text>
 						</TouchableOpacity>
 					</View>
 				</View>

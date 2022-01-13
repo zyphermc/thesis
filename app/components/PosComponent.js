@@ -10,8 +10,22 @@ function PosComponent(props) {
 		console.log("Quantity Calculated");
 	};
 	const [count, setCount] = useState(0);
-	const onPressAdd = () => setCount(prevCount => prevCount + 1);
-	const onPressMinus = () => setCount(prevCount => prevCount - 1, 0);
+	const onPressAdd = () => setCount((prevCount) => prevCount + 1);
+	const onPressMinus = () => setCount((prevCount) => prevCount - 1, 0);
+	const [itemPrice, SetItemPrice] = useState(0);
+	const [selectedSize, SetSelectedSize] = useState("");
+
+	let selectedSizeFast = "";
+
+	const GetItemPrice = () => {
+		if (props.category != "Food") {
+			const tempPrice = props.selling_prices.find((element) => {
+				return element.size === selectedSizeFast.toLowerCase();
+			});
+
+			SetItemPrice(tempPrice.selling_price);
+		}
+	};
 
 	return (
 		<View style={styles.container}>
@@ -29,7 +43,8 @@ function PosComponent(props) {
 				<Text style={styles.textStyle}>Category: {props.category}</Text>
 				<Text style={styles.textStyle}>Quantity: {props.quantity}</Text>
 				<Text style={styles.textStyle}>
-					Selling Price: ₱{props.sellingPrice}
+					Selling Price: ₱
+					{props.category === "Food" ? props.sellingPrice : itemPrice}
 				</Text>
 				<Text
 					style={[
@@ -46,9 +61,7 @@ function PosComponent(props) {
 					alignItems: "flex-end",
 				}}
 			>
-				<View
-					style={{ flexDirection: 'row', alignItems: 'center' }}
-				>
+				<View style={{ flexDirection: "row", alignItems: "center" }}>
 					<TouchableOpacity
 						onPress={() => {
 							if (count > 0) {
@@ -59,25 +72,81 @@ function PosComponent(props) {
 						<Ionicons name="remove-circle-outline" size={25} color={"black"} />
 					</TouchableOpacity>
 
-					<Text
-						style={{ fontWeight: 'bold', paddingHorizontal: 5 }}
-					>
+					<Text style={{ fontWeight: "bold", paddingHorizontal: 5 }}>
 						{count}
 					</Text>
 
-					<TouchableOpacity
-						onPress={onPressAdd}
-					>
+					<TouchableOpacity onPress={onPressAdd}>
 						<Ionicons name="add-circle-outline" size={25} color={"black"} />
 					</TouchableOpacity>
-
 				</View>
-
+				{props.category != "Food" ? (
+					<View style={{ flexDirection: "row", alignItems: "center" }}>
+						<TouchableOpacity
+							style={[
+								styles.sizeButton,
+								{
+									backgroundColor:
+										selectedSize === "Small" ? "orange" : "transparent",
+								},
+							]}
+							onPress={() => {
+								SetSelectedSize("Small");
+								selectedSizeFast = "Small";
+								GetItemPrice();
+							}}
+						>
+							<Text>S</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							style={[
+								styles.sizeButton,
+								{
+									backgroundColor:
+										selectedSize === "Medium" ? "orange" : "transparent",
+								},
+							]}
+							onPress={() => {
+								SetSelectedSize("Medium");
+								selectedSizeFast = "Medium";
+								GetItemPrice();
+							}}
+						>
+							<Text>M</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							style={[
+								styles.sizeButton,
+								{
+									backgroundColor:
+										selectedSize === "Large" ? "orange" : "transparent",
+								},
+							]}
+							onPress={() => {
+								SetSelectedSize("Large");
+								selectedSizeFast = "Large";
+								GetItemPrice();
+							}}
+						>
+							<Text>L</Text>
+						</TouchableOpacity>
+					</View>
+				) : (
+					<></>
+				)}
 				<TouchableOpacity
 					style={styles.buttonInside}
 					onPress={() => {
-						props.getOrderedProduct(props.name, count, props.sellingPrice, props.vat, props.imageURI);
+						props.getOrderedProduct(
+							props.name,
+							count,
+							props.category === "Food" ? props.sellingPrice : itemPrice,
+							props.vat,
+							props.imageURI,
+							selectedSize
+						);
 						setCount(0);
+						SetSelectedSize("");
 					}}
 				>
 					<Ionicons name="cart-outline" size={35} color={"white"} />
@@ -116,6 +185,13 @@ const styles = StyleSheet.create({
 	textStyle: {
 		fontSize: 15,
 		color: "black",
+	},
+	sizeButton: {
+		padding: 5,
+		width: 30,
+		height: 30,
+		borderWidth: 1,
+		alignItems: "center",
 	},
 });
 

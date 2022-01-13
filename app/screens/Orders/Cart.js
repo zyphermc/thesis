@@ -1,107 +1,173 @@
 import React, { useState, useEffect } from "react";
-import { Text, View, Button, Image, FlatList, TouchableOpacity } from "react-native";
+import {
+	Text,
+	View,
+	FlatList,
+	TouchableOpacity,
+	StyleSheet,
+	TextInput,
+	Alert,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import CartComponent from "../../components/CartComponent";
 
-
 function Cart(props) {
-
 	const { orderProductList } = props.route.params;
-	const [totalValue, setTotalValue] = useState(0)
+	const [totalValue, setTotalValue] = useState(0);
+
+	const Tax = totalValue * 0.12;
+	const Subtotal = totalValue - Tax;
+	let cashTendered = "";
+
+	const navigation = useNavigation();
 
 	useEffect(() => {
 		const getTotalValue = () => {
-			let temp = 0
-			orderProductList.forEach(element => {
-				temp += element.sellingPrice * element.quantity
+			let temp = 0;
+			orderProductList.forEach((element) => {
+				temp += element.sellingPrice * element.quantity;
 			});
-			setTotalValue(temp)
-		}
+			setTotalValue(temp);
+		};
 		getTotalValue();
 	}, []);
 
-	return (
-		<View>
-			<View>
-				<View
-					style={{
-						width: "100%",
-						height: 30,
-						backgroundColor: 'black',
-						justifyContent: 'center'
-					}}
-				>
-					<Text
-						style={{
-							fontSize: 18,
-							fontWeight: 'bold',
-							color: 'white',
-							marginLeft: 100
-						}}
-					>Product    Qty      Price       Total</Text>
-				</View>
-				<FlatList
-					data={orderProductList}
-					keyExtractor={(item, index) => index.toString()}
-					renderItem={({ item }) => (
-						<CartComponent
-							name={item.productName}
-							imageURI={item.imageURI}
-							quantity={item.quantity}
-							sellingPrice={item.sellingPrice}
-							vat={item.vat}
-						/>
-					)}
-
-				/>
-			</View>
-			<View style={{ flex: 1 }}>
-				<View>
-					<Text style={{ color: 'black' }}>HELLO WORLD</Text>
-				</View>
-				<View style={{
-					position: 'absolute',
-					left: 0,
-					right: 0,
-					bottom: 0,
-					height: 30,
-					justifyContent: 'center',
-					backgroundColor: 'orange',
-				}}>
-					<Text
-						style={{
-							fontSize: 23,
-							fontWeight: 'bold',
-							alignSelf: 'flex-end',
-							marginRight: 40
-						}}
-					>₱{totalValue}</Text>
-				</View>
-			</View>
-
-			<TouchableOpacity
+	const GetHeader = () => {
+		return (
+			<View
 				style={{
-					height: 25,
-					width: 100,
-					borderRadius: 20,
-					borderWidth: 2,
-					borderColor: 'black',
-					backgroundColor: 'orange'
+					width: "100%",
+					height: 30,
+					backgroundColor: "black",
+					justifyContent: "center",
 				}}
-				onPress={() => (console.Console)}
 			>
 				<Text
 					style={{
-						justifyContent: 'center',
-						alignItems: 'center',
-						textAlign: 'center',
-						fontWeight: 'bold',
-						fontSize: 15
+						fontSize: 18,
+						fontWeight: "bold",
+						color: "white",
+						marginLeft: 100,
 					}}
-				>CHECKOUT</Text>
-			</TouchableOpacity>
-		</View>
+				>
+					Product---Qty---Price---Total
+				</Text>
+			</View>
+		);
+	};
 
+	const GetFooter = () => {
+		return (
+			<View>
+				<View style={{ flex: 1 }}>
+					<View
+						style={{
+							position: "absolute",
+							left: 0,
+							right: 0,
+							bottom: 0,
+							height: 7,
+							justifyContent: "center",
+							backgroundColor: "orange",
+						}}
+					/>
+				</View>
+				<View
+					style={{
+						flex: 1,
+						margin: 10,
+						flexDirection: "row",
+					}}
+				>
+					<View style={{ paddingRight: 15 }}>
+						<Text style={styles.bottomText}>Subtotal:</Text>
+						<Text style={styles.bottomText}>Tax (12%):</Text>
+						<Text style={styles.bottomText}>Total: </Text>
+						<Text style={styles.bottomText}>Cash tendered: </Text>
+					</View>
+
+					<View>
+						<Text style={{ fontSize: 20 }}>₱{Subtotal.toFixed(2)}</Text>
+						<Text style={{ fontSize: 20 }}>₱{Tax.toFixed(2)}</Text>
+						<Text style={{ fontSize: 20 }}>₱{totalValue.toFixed(2)}</Text>
+						<TextInput
+							style={{ height: 30, width: 130, fontSize: 20 }}
+							placeholder="Input Amount"
+							onChangeText={(text) => (cashTendered = text)}
+							defaultValue={cashTendered.toString()}
+							keyboardType="number-pad"
+						/>
+					</View>
+
+					<TouchableOpacity
+						style={{
+							position: "absolute",
+							height: 35,
+							width: 110,
+							right: 6,
+							borderRadius: 4,
+							borderWidth: 2,
+							borderColor: "black",
+							backgroundColor: "orange",
+							alignSelf: "center",
+							alignItems: "center",
+							justifyContent: "center",
+						}}
+						onPress={() => {
+							if (cashTendered >= totalValue) {
+								navigation.navigate("CheckOut", {
+									orderProductList: orderProductList,
+									Subtotal: Subtotal,
+									Tax: Tax,
+									totalValue: totalValue,
+									cashTendered: parseInt(cashTendered),
+								});
+							} else {
+								Alert.alert("Not enough cash!");
+							}
+						}}
+					>
+						<Text
+							style={{
+								textAlign: "center",
+								fontWeight: "bold",
+								fontSize: 16,
+							}}
+						>
+							CHECKOUT
+						</Text>
+					</TouchableOpacity>
+				</View>
+			</View>
+		);
+	};
+
+	return (
+		<View>
+			<FlatList
+				data={orderProductList}
+				keyExtractor={(item, index) => index.toString()}
+				renderItem={({ item }) => (
+					<CartComponent
+						name={item.productName}
+						imageURI={item.imageURI}
+						quantity={item.quantity}
+						sellingPrice={item.sellingPrice}
+						vat={item.vat}
+					/>
+				)}
+				ListHeaderComponent={GetHeader}
+				ListFooterComponent={GetFooter}
+			/>
+		</View>
 	);
 }
+
+const styles = StyleSheet.create({
+	bottomText: {
+		fontSize: 20,
+		fontWeight: "bold",
+	},
+});
 
 export default Cart;
