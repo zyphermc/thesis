@@ -95,7 +95,7 @@ function AddProductForm(props) {
 				product_sellingPrice: parseInt(data.price),
 				product_vatPercent: parseInt(data.vatPercent),
 				product_imageURI: data.imageURI,
-				recipe: data.recipe,
+				//recipe: data.recipe,
 			},
 			{ merge: true }
 		);
