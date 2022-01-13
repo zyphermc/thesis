@@ -75,14 +75,12 @@ function ViewIngredientModal(props) {
 		);
 	};
 
-	const LogTransaction = async (data) => {
-		await updateDoc(doc(db, "ingredients", data.name), {
-			history: data.history,
-		});
+	const OpenModal = () => {
+		SetRestockModalOpen(true);
 	};
 
-	const handleModal = (modalState) => {
-		SetRestockModalOpen(modalState);
+	const CloseModal = () => {
+		SetRestockModalOpen(false);
 	};
 
 	function FormComponent(props) {
@@ -107,12 +105,11 @@ function ViewIngredientModal(props) {
 						visible={restockModalOpen}
 						animationType="slide"
 						onRequestClose={() => {
-							handleModal(false);
+							closeModal();
 						}}
 					>
 						<RestockModal
-							handleModal={handleModal}
-							LogTransaction={LogTransaction}
+							CloseModal={CloseModal}
 							ingredientData={ingredientData}
 						/>
 					</Modal>
@@ -159,7 +156,7 @@ function ViewIngredientModal(props) {
 										/>
 										<TouchableOpacity
 											onPress={() => {
-												handleModal(true);
+												OpenModal();
 											}}
 										>
 											<Ionicons

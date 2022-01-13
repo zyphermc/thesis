@@ -37,7 +37,35 @@ function AddIngredientForm(props) {
 		"Others",
 	];
 
+	const getCurrentDate = () => {
+		var date = new Date().getDate();
+		var month = new Date().getMonth() + 1;
+		var year = new Date().getFullYear();
+
+		return year + "-" + month + "-" + date;
+	};
+
+	const currentDate = getCurrentDate();
+
 	const AddToFirestore = async (data) => {
+		let history = [];
+
+		let log = {
+			type: "",
+			name: "",
+			amount: "",
+			supplier: "",
+			date: "",
+		};
+
+		log.type = "Initialized";
+		log.name = data.name;
+		log.amount = parseInt(data.quantity);
+		log.supplier = "Admin";
+		log.date = currentDate;
+
+		history.push(log);
+
 		await setDoc(
 			doc(db, "ingredients", data.name),
 			{
@@ -52,6 +80,7 @@ function AddIngredientForm(props) {
 				annual_demand: parseInt(data.annualDemand),
 				annual_holding_cost: parseInt(data.annualHoldingCost),
 				annual_order_cost: parseInt(data.annualOrderCost),
+				history: history,
 			},
 			{ merge: true }
 		);

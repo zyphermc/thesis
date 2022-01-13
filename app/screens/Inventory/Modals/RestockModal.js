@@ -8,19 +8,29 @@ import {
 	ScrollView,
 	Button,
 } from "react-native";
+import { doc, increment, updateDoc } from "firebase/firestore";
 import { Formik } from "formik";
+import { db } from "../../../../firebase-config";
 
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 function RestockModal(props) {
-	let transactionLog = {
+	let initialValues = {
 		type: "Restock",
 		name: props.ingredientData.ingredient_name,
 		amount: "",
 		supplier: "",
 		date: "",
 	};
+
+	useEffect(() => {
+		let isMounted = true;
+
+		return () => {
+			isMounted = false;
+		};
+	}, []);
 
 	const getCurrentDate = () => {
 		var date = new Date().getDate();
@@ -32,11 +42,34 @@ function RestockModal(props) {
 
 	const currentDate = getCurrentDate();
 
-	//props.LogTransaction(data) is passed here
+	const SetTransactionLog = async (data) => {
+		let transactionLog = {
+			type: "",
+			name: "",
+			amount: "",
+			supplier: "",
+			date: "",
+		};
+
+		transactionLog.type = data.type;
+		transactionLog.name = data.name;
+		transactionLog.amount = parseInt(data.amount);
+		transactionLog.supplier = data.supplier;
+		transactionLog.date = currentDate;
+
+		let history = props.ingredientData.history;
+
+		history.push(transactionLog);
+
+		await updateDoc(doc(db, "ingredients", data.name), {
+			ingredient_stock: increment(parseInt(data.amount)),
+			history: history,
+		});
+	};
 
 	return (
 		<View style={{ flex: 1 }}>
-			<TouchableOpacity style={styles.closeButton}>
+			<TouchableOpacity style={styles.closeButton} onPress={props.CloseModal}>
 				<Ionicons name="close-outline" size={40} color={"black"} />
 			</TouchableOpacity>
 
@@ -44,9 +77,9 @@ function RestockModal(props) {
 				<Text style={styles.infoText}>Restock Form:</Text>
 
 				<Formik
-					initialValues={transactionLog}
+					initialValues={initialValues}
 					onSubmit={(values) => {
-						console.log(values);
+						SetTransactionLog(values);
 					}}
 				>
 					{(props) => (
@@ -136,6 +169,7 @@ const styles = StyleSheet.create({
 	},
 	infoContainer: {
 		flexDirection: "row",
+
 		alignItems: "center",
 		borderWidth: 1,
 		borderColor: "#C7D02F",
@@ -149,6 +183,7 @@ const styles = StyleSheet.create({
 		marginLeft: 4,
 	},
 	input: {
+		flex: 1,
 		alignSelf: "flex-start",
 		height: 50,
 		padding: 10,
