@@ -73,7 +73,7 @@ function ViewProductModal(props) {
 	}, []);
 
 	const AddToFirestore = async (data) => {
-		if (productData.category === "Food") {
+		if (productData.product_category === "Food") {
 			await updateDoc(
 				doc(db, "products", data.name),
 				{
@@ -81,7 +81,7 @@ function ViewProductModal(props) {
 					product_category: data.category,
 					product_description: data.description,
 					product_quantity: parseInt(data.quantity),
-					product_sellingPrice: parseInt(data.sellingPrice),
+					product_sellingPrice: data.price,
 					product_vatPercent: parseInt(data.vatPercent),
 					product_imageURI: data.imageURI,
 					recipe: data.recipe,
@@ -113,25 +113,15 @@ function ViewProductModal(props) {
 
 	function FormComponent(props) {
 		if (typeof productData.product_name != "undefined") {
-			let initialValues = {
-				name: "",
-				description: "",
-				category: "",
-				quantity: "",
-				price: "",
-				selling_prices: "",
-				vatPercent: "",
-				imageURI: "",
-				recipe: "",
-			};
+			let initialValues = {};
 
-			if (productData.category === "Food") {
+			if (productData.product_category === "Food") {
 				initialValues = {
 					name: productData.product_name,
 					description: productData.product_description,
 					category: productData.product_category,
 					quantity: productData.product_quantity,
-					price: productData.sellingPrice,
+					price: productData.product_sellingPrice,
 					vatPercent: productData.product_vatPercent,
 					imageURI: productData.product_imageURI,
 					recipe: productData.recipe,
@@ -188,7 +178,6 @@ function ViewProductModal(props) {
 										onChangeText={props.handleChange("description")}
 										defaultValue={productData.product_description}
 										editable={isEditable}
-										selection={{ start: 0, end: 0 }}
 									/>
 								</View>
 								<View style={styles.infoContainer}>
@@ -214,10 +203,12 @@ function ViewProductModal(props) {
 									<Text style={styles.infoText}>Product Price: </Text>
 									{props.values.category === "Food" ? (
 										<TextInput
-											style={styles.input}
+											style={[styles.input, { marginLeft: 5 }]}
 											placeholder="Product Price"
-											onChangeText={props.handleChange("price")}
-											defaultValue={productData.product_sellingPrice.toString()}
+											onChangeText={(val) => {
+												props.setFieldValue("price", parseInt(val));
+											}}
+											defaultValue={String(props.values.price)}
 											editable={isEditable}
 										/>
 									) : (
@@ -292,7 +283,6 @@ function ViewProductModal(props) {
 										onChangeText={props.handleChange("imageURI")}
 										defaultValue={productData.product_imageURI.toString()}
 										editable={isEditable}
-										selection={{ start: 0, end: 0 }}
 									/>
 								</View>
 								{props.values.category != "Drinks" ? (

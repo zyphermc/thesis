@@ -9,11 +9,27 @@ import {
 	Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+
+//Database
+import {
+	collection,
+	doc,
+	getDocs,
+	increment,
+	updateDoc,
+} from "firebase/firestore";
+import { db } from "../../../firebase-config";
+
 import CartComponent from "../../components/CartComponent";
 
 function Cart(props) {
 	const { orderProductList } = props.route.params;
+	const [products, SetProducts] = useState([]);
 	const [totalValue, setTotalValue] = useState(0);
+
+	//Database references
+	const ingredientsCollectionRef = collection(db, "ingredients");
+	const productsCollectionRef = collection(db, "products");
 
 	let Tax = 0;
 	let Subtotal = 0;
@@ -26,6 +42,19 @@ function Cart(props) {
 	const navigation = useNavigation();
 
 	useEffect(() => {
+		const GetProducts = async () => {
+			const myProducts = [];
+			const querySnapshot = await getDocs(productsCollectionRef);
+
+			querySnapshot.forEach((doc) => {
+				myProducts.push(doc.data());
+			});
+
+			SetProducts(myProducts);
+		};
+
+		GetProducts();
+
 		const getTotalValue = () => {
 			let temp = 0;
 			orderProductList.forEach((element) => {
@@ -35,6 +64,70 @@ function Cart(props) {
 		};
 		getTotalValue();
 	}, []);
+
+	const deductItems = async (name, orderQuantity, size) => {
+		//note: products should be passed as a parameter or declared to whichever screen
+		//this function is in.
+
+		//Sizes are "small", "medium", "large"
+
+		if (typeof name != "undefined" && typeof orderQuantity != "undefined") {
+			//In the list of products, find the product matching "name"
+			const myProduct = products.find((product) => {
+				return product.product_name.toLowerCase().includes(name.toLowerCase());
+			});
+
+			//Check if product is not drink (to not use size)
+			if (myProduct.product_category != "Drinks") {
+				//On each ingredient in the recipe, do stuff
+				myProduct.recipe.map(async (ingredient) => {
+					//access ingredient document from firebase and deduct amount
+					const docRef = doc(db, "ingredients", ingredient.name);
+
+					//update document and deduct the amount
+					await updateDoc(docRef, {
+						ingredient_stock: increment(-ingredient.amount * orderQuantity),
+					});
+				});
+			} else {
+				if (typeof size != "undefined") {
+					myProduct.recipe.map((recipe) => {
+						if (size.toLowerCase() === recipe.size) {
+							recipe.ingredients.map(async (ingredient) => {
+								//access ingredient document from firebase and deduct amount
+								const docRef = doc(db, "ingredients", ingredient.name);
+
+								//update document and deduct the amount
+								await updateDoc(docRef, {
+									ingredient_stock: increment(
+										-ingredient.amount * orderQuantity
+									),
+								});
+							});
+						}
+					});
+				}
+			}
+			//reduce quantity of product by orderQuantity
+			//access product document from firebase and deduct amount
+			const docRef = doc(db, "products", myProduct.product_name);
+
+			//update document and deduct the amount
+			await updateDoc(docRef, {
+				product_quantity: increment(-orderQuantity),
+			});
+		}
+	};
+
+	const UpdateTransactionLog = () => {
+		//Update transaction in database
+		//let chuchu template then update transaction history
+
+		//Deduct Items
+		orderProductList.forEach((order) => {
+			deductItems(order.productName, order.quantity, order.size);
+		});
+	};
 
 	const GetHeader = () => {
 		return (
@@ -126,6 +219,8 @@ function Cart(props) {
 									totalValue: totalValue,
 									cashTendered: parseInt(cashTendered),
 								});
+
+								UpdateTransactionLog();
 							} else {
 								Alert.alert("Not enough cash!");
 							}
