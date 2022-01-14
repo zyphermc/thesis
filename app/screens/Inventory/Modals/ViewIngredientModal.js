@@ -100,7 +100,7 @@ function ViewIngredientModal(props) {
 			};
 
 			return (
-				<View>
+				<View style={{ flex: 1 }}>
 					<Modal
 						visible={restockModalOpen}
 						animationType="slide"
@@ -123,7 +123,7 @@ function ViewIngredientModal(props) {
 							}}
 						>
 							{(props) => (
-								<View>
+								<View style={{ flex: 1 }}>
 									<View style={styles.infoContainer}>
 										<Text style={styles.infoText}>Name:</Text>
 										<TextInput
@@ -177,14 +177,14 @@ function ViewIngredientModal(props) {
 										/>
 									</View>
 									<View style={styles.infoContainer}>
-										<Text style={styles.infoText}>Avg. Buying Price (₱):</Text>
+										<Text style={styles.infoText}>Init. Buying Price (₱):</Text>
 										<TextInput
 											style={styles.input}
 											placeholder="Initial Buying Price in ₱"
 											onChangeText={props.handleChange("price")}
 											defaultValue={ingredientData.ingredient_unitPrice_avg.toString()}
 											keyboardType="numeric"
-											editable={isEditable}
+											editable={false}
 										/>
 									</View>
 									<View style={styles.infoContainer}>
@@ -371,6 +371,7 @@ const styles = StyleSheet.create({
 		top: 180,
 	},
 	infoContainer: {
+		flex: 1,
 		flexDirection: "row",
 		alignItems: "center",
 		borderWidth: 1,

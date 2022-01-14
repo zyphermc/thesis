@@ -4,7 +4,7 @@ import AddIngredientForm from "../Forms/AddIngredientForm";
 
 function AddIngredientModal(props) {
 	return (
-		<View>
+		<View style={{ flex: 1 }}>
 			<Button title="Close" onPress={props.closeModal} />
 			<AddIngredientForm />
 		</View>

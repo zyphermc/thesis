@@ -14,6 +14,7 @@ import { useNavigation } from "@react-navigation/native";
 import {
 	collection,
 	doc,
+	getDoc,
 	getDocs,
 	increment,
 	updateDoc,
@@ -38,6 +39,16 @@ function Cart(props) {
 	Subtotal = totalValue - Tax;
 
 	let cashTendered = "";
+
+	const getCurrentDate = () => {
+		var date = new Date().getDate();
+		var month = new Date().getMonth() + 1;
+		var year = new Date().getFullYear();
+
+		return year + "-" + month + "-" + date;
+	};
+
+	const currentDate = getCurrentDate();
 
 	const navigation = useNavigation();
 
@@ -65,7 +76,7 @@ function Cart(props) {
 		getTotalValue();
 	}, []);
 
-	const deductItems = async (name, orderQuantity, size) => {
+	const deductItems = async (name, orderQuantity, size, price) => {
 		//note: products should be passed as a parameter or declared to whichever screen
 		//this function is in.
 
@@ -77,6 +88,34 @@ function Cart(props) {
 				return product.product_name.toLowerCase().includes(name.toLowerCase());
 			});
 
+			//Log each ordered item in products
+			const prodDocRef = doc(db, "products", name);
+			const prodDocSnap = await getDoc(prodDocRef);
+
+			let productHistory = prodDocSnap.data().history;
+
+			let orderLog = {
+				type: "",
+				name: "",
+				amount: "",
+				date: "",
+				totalValue: "",
+			};
+
+			orderLog.type = "Ordered";
+			orderLog.name = name;
+			orderLog.amount = parseInt(orderQuantity);
+			orderLog.date = currentDate;
+			orderLog.totalValue = price * orderQuantity;
+
+			productHistory.push(orderLog);
+
+			//update product history
+			await updateDoc(prodDocRef, {
+				product_quantity: increment(-orderQuantity),
+				history: productHistory,
+			});
+
 			//Check if product is not drink (to not use size)
 			if (myProduct.product_category != "Drinks") {
 				//On each ingredient in the recipe, do stuff
@@ -84,9 +123,28 @@ function Cart(props) {
 					//access ingredient document from firebase and deduct amount
 					const docRef = doc(db, "ingredients", ingredient.name);
 
+					const foodDocSnap = await getDoc(docRef);
+
+					let foodHistory = foodDocSnap.data().history;
+
+					let foodLog = {
+						type: "",
+						name: "",
+						amount: "",
+						date: "",
+					};
+
+					foodLog.type = "Deducted";
+					foodLog.name = name;
+					foodLog.amount = ingredient.amount * orderQuantity;
+					foodLog.date = currentDate;
+
+					foodHistory.push(foodLog);
+
 					//update document and deduct the amount
 					await updateDoc(docRef, {
 						ingredient_stock: increment(-ingredient.amount * orderQuantity),
+						history: foodHistory,
 					});
 				});
 			} else {
@@ -97,11 +155,30 @@ function Cart(props) {
 								//access ingredient document from firebase and deduct amount
 								const docRef = doc(db, "ingredients", ingredient.name);
 
+								const drinkDocSnap = await getDoc(docRef);
+
+								let drinkHistory = drinkDocSnap.data().history;
+
+								let drinkLog = {
+									type: "",
+									name: "",
+									amount: "",
+									date: "",
+								};
+
+								drinkLog.type = "Deducted";
+								drinkLog.name = name;
+								drinkLog.amount = ingredient.amount * orderQuantity;
+								drinkLog.date = currentDate;
+
+								drinkHistory.push(drinkLog);
+
 								//update document and deduct the amount
 								await updateDoc(docRef, {
 									ingredient_stock: increment(
 										-ingredient.amount * orderQuantity
 									),
+									history: drinkHistory,
 								});
 							});
 						}
@@ -120,28 +197,14 @@ function Cart(props) {
 	};
 
 	const UpdateTransactionLog = () => {
-		//Update transaction in database
-		// let history = [];
-
-		// let log = {
-		// 	type: "",
-		// 	name: "",
-		// 	amount: "",
-		// 	date: "",
-		// 	totalValue: "",
-		// };
-
-		// log.type = "Deducted";
-		// log.name = data.name;
-		// log.amount = parseInt(data.quantity);
-		// log.date = currentDate;
-		// log.totalValue = "n/a";
-
-		// history.push(log);
-
-		//Deduct Items
+		//Deduct Items and Update Transaction
 		orderProductList.forEach((order) => {
-			deductItems(order.productName, order.quantity, order.size);
+			deductItems(
+				order.productName,
+				order.quantity,
+				order.size,
+				order.sellingPrice
+			);
 		});
 	};
 

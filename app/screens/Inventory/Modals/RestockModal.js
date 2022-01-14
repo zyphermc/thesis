@@ -120,7 +120,7 @@ function RestockModal(props) {
 								<Text style={styles.infoText}>Price:</Text>
 								<TextInput
 									style={styles.input}
-									placeholder="Amount"
+									placeholder="Price"
 									onChangeText={props.handleChange("price")}
 									keyboardType="number-pad"
 								/>
