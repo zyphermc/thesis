@@ -29,7 +29,6 @@ function Cart(props) {
 	const [totalValue, setTotalValue] = useState(0);
 
 	//Database references
-	const ingredientsCollectionRef = collection(db, "ingredients");
 	const productsCollectionRef = collection(db, "products");
 
 	let Tax = 0;
@@ -115,6 +114,7 @@ function Cart(props) {
 				product_quantity: increment(-orderQuantity),
 				history: productHistory,
 			});
+			console.log("Order quantity: " + orderQuantity);
 
 			//Check if product is not drink (to not use size)
 			if (myProduct.product_category != "Drinks") {
@@ -185,14 +185,6 @@ function Cart(props) {
 					});
 				}
 			}
-			//reduce quantity of product by orderQuantity
-			//access product document from firebase and deduct amount
-			const docRef = doc(db, "products", myProduct.product_name);
-
-			//update document and deduct the amount
-			await updateDoc(docRef, {
-				product_quantity: increment(-orderQuantity),
-			});
 		}
 	};
 

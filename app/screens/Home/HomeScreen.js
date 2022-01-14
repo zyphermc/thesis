@@ -1,39 +1,154 @@
-import { React, useState } from "react";
+import { React, useEffect, useState } from "react";
 import {
 	Text,
-	View,
 	StyleSheet,
 	ImageBackground,
 	Dimensions,
+	Button,
+	TouchableOpacity,
 } from "react-native";
 
 //Import Chart templates
+import { LineChart, PieChart } from "react-native-chart-kit";
+
+//Database
 import {
-	LineChart,
-	BarChart,
-	PieChart,
-	ProgressChart,
-	ContributionGraph,
-	StackedBarChart,
-} from "react-native-chart-kit";
+	collection,
+	doc,
+	getDoc,
+	getDocs,
+	increment,
+	updateDoc,
+	onSnapshot,
+} from "firebase/firestore";
+import { db } from "../../../firebase-config";
 
 function HomeScreen({ navigation, route }) {
-	const pieData = [
-		{
-			name: "Oreo Milkshake",
-			amount: 185,
-			color: "rgba(131, 167, 234, 1)",
-			legendFontColor: "#7F7F7F",
+	const [products, SetProducts] = useState([]);
+	const [myPieData, SetMyPieData] = useState([]);
+	const [fridayLineData, SetFridayLineData] = useState(0);
+	//Database references
+	const productsCollectionRef = collection(db, "products");
+
+	const generateColor = () => {
+		const randomColor = Math.floor(Math.random() * 16777215)
+			.toString(16)
+			.padStart(6, "0");
+		return `#${randomColor}`;
+	};
+
+	useEffect(() => {
+		//Get Products from Firestore
+		const getProducts = async () => {
+			const unsub = onSnapshot(productsCollectionRef, (docsSnapshot) => {
+				const myProducts = [];
+
+				docsSnapshot.docChanges().forEach(async (change) => {
+					if (change.type === "added" || change.type === "modified") {
+						let pieDataTemplate = {
+							name: "",
+							amount: "",
+							color: generateColor(),
+							legendFontColor: generateColor(),
+							legendFontSize: 12,
+						};
+						let pieData = [];
+						const GetItemSales = () => {
+							let itemHistories = products.map(({ history }) => history);
+							let totalItemsSold = 0;
+							let filteredItems = itemHistories.map((itemHistoryArray) => {
+								return itemHistoryArray.filter((itemHistory) => {
+									return itemHistory.type == "Ordered";
+								});
+							});
+
+							filteredItems.map((items) => {
+								items.map((item) => {
+									//Check if already in list
+									const itemIndex = pieData.findIndex((myItem) => {
+										return myItem.name.includes(item.name);
+									});
+
+									if (itemIndex != -1) {
+										pieData[itemIndex].amount += item.amount;
+									} else {
+										pieDataTemplate = {
+											name: item.name,
+											amount: item.amount,
+											color: generateColor(),
+											legendFontColor: generateColor(),
+											legendFontSize: 12,
+										};
+
+										pieData.push(pieDataTemplate);
+									}
+
+									totalItemsSold += item.amount;
+								});
+							});
+							SetFridayLineData(totalItemsSold);
+							SetMyPieData(pieData);
+						};
+
+						GetItemSales();
+					}
+				});
+
+				docsSnapshot.forEach((doc) => {
+					myProducts.push(doc.data());
+				});
+				SetProducts(myProducts);
+			});
+		};
+
+		getProducts();
+	}, []);
+
+	const UpdateGraphs = () => {
+		let pieDataTemplate = {
+			name: "",
+			amount: "",
+			color: generateColor(),
+			legendFontColor: generateColor(),
 			legendFontSize: 12,
-		},
-		{
-			name: "Carbonara",
-			amount: 80,
-			color: "#F00",
-			legendFontColor: "#7F7F7F",
-			legendFontSize: 12,
-		},
-	];
+		};
+		let pieData = [];
+
+		let itemHistories = products.map(({ history }) => history);
+		let totalItemsSold = 0;
+		let filteredItems = itemHistories.map((itemHistoryArray) => {
+			return itemHistoryArray.filter((itemHistory) => {
+				return itemHistory.type == "Ordered";
+			});
+		});
+
+		filteredItems.map((items) => {
+			items.map((item) => {
+				//Check if already in list
+				const itemIndex = pieData.findIndex((myItem) => {
+					return myItem.name.includes(item.name);
+				});
+
+				if (itemIndex != -1) {
+					pieData[itemIndex].amount += item.amount;
+				} else {
+					pieDataTemplate = {
+						name: item.name,
+						amount: item.amount,
+						color: generateColor(),
+						legendFontColor: generateColor(),
+						legendFontSize: 12,
+					};
+
+					pieData.push(pieDataTemplate);
+				}
+
+				totalItemsSold += item.amount;
+			});
+		});
+		SetFridayLineData(totalItemsSold);
+		SetMyPieData(pieData);
+	};
 
 	const myChartConfig = {
 		backgroundColor: "#e26a00",
@@ -54,13 +169,29 @@ function HomeScreen({ navigation, route }) {
 			}}
 			style={styles.container}
 		>
+			<TouchableOpacity
+				onPress={UpdateGraphs}
+				style={{
+					position: "absolute",
+					right: 5,
+					height: 30,
+					width: 90,
+					borderWidth: 1,
+					backgroundColor: "#fff",
+					borderColor: "orange",
+					justifyContent: "center",
+					alignItems: "center",
+				}}
+			>
+				<Text>UPDATE</Text>
+			</TouchableOpacity>
 			<Text style={{ fontSize: 20, fontWeight: "100" }}>Sales Amount</Text>
 			<LineChart
 				data={{
 					labels: ["Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"],
 					datasets: [
 						{
-							data: [31, 25, 13, 52, 21, 66, 57],
+							data: [87, 74, 47, 35, fridayLineData, 0, 0],
 						},
 					],
 				}}
@@ -91,13 +222,13 @@ function HomeScreen({ navigation, route }) {
 			/>
 			<Text style={{ fontSize: 20, fontWeight: "100" }}>Products Sold</Text>
 			<PieChart
-				data={pieData}
+				data={myPieData}
 				width={Dimensions.get("window").width}
 				height={300}
 				chartConfig={myChartConfig}
 				accessor={"amount"}
 				backgroundColor={"orange"}
-				paddingLeft={"25"}
+				paddingLeft={"0"}
 				center={[0, 0]}
 				absolute
 				style={{ borderRadius: 24 }}
