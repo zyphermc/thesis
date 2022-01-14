@@ -34,6 +34,7 @@ function AddIngredientForm(props) {
 		"Vegetable",
 		"Seasoning",
 		"Fruit",
+		"Flavoring",
 		"Others",
 	];
 
@@ -54,6 +55,7 @@ function AddIngredientForm(props) {
 			type: "",
 			name: "",
 			amount: "",
+			price: "",
 			supplier: "",
 			date: "",
 		};
@@ -61,6 +63,7 @@ function AddIngredientForm(props) {
 		log.type = "Initialized";
 		log.name = data.name;
 		log.amount = parseInt(data.quantity);
+		log.price = parseInt(data.price);
 		log.supplier = "Admin";
 		log.date = currentDate;
 

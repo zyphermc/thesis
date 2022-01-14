@@ -20,6 +20,7 @@ function RestockModal(props) {
 		type: "Restock",
 		name: props.ingredientData.ingredient_name,
 		amount: "",
+		price: "",
 		supplier: "",
 		date: "",
 	};
@@ -47,6 +48,7 @@ function RestockModal(props) {
 			type: "",
 			name: "",
 			amount: "",
+			price: "",
 			supplier: "",
 			date: "",
 		};
@@ -54,6 +56,7 @@ function RestockModal(props) {
 		transactionLog.type = data.type;
 		transactionLog.name = data.name;
 		transactionLog.amount = parseInt(data.amount);
+		transactionLog.price = parseInt(data.price);
 		transactionLog.supplier = data.supplier;
 		transactionLog.date = currentDate;
 
@@ -110,6 +113,15 @@ function RestockModal(props) {
 									style={styles.input}
 									placeholder="Amount"
 									onChangeText={props.handleChange("amount")}
+									keyboardType="number-pad"
+								/>
+							</View>
+							<View style={styles.infoContainer}>
+								<Text style={styles.infoText}>Price:</Text>
+								<TextInput
+									style={styles.input}
+									placeholder="Amount"
+									onChangeText={props.handleChange("price")}
 									keyboardType="number-pad"
 								/>
 							</View>

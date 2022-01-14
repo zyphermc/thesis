@@ -121,7 +121,23 @@ function Cart(props) {
 
 	const UpdateTransactionLog = () => {
 		//Update transaction in database
-		//let chuchu template then update transaction history
+		// let history = [];
+
+		// let log = {
+		// 	type: "",
+		// 	name: "",
+		// 	amount: "",
+		// 	date: "",
+		// 	totalValue: "",
+		// };
+
+		// log.type = "Deducted";
+		// log.name = data.name;
+		// log.amount = parseInt(data.quantity);
+		// log.date = currentDate;
+		// log.totalValue = "n/a";
+
+		// history.push(log);
 
 		//Deduct Items
 		orderProductList.forEach((order) => {

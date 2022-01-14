@@ -92,9 +92,35 @@ function AddProductForm(props) {
 		drinkRecipe: drinkRecipeData,
 	};
 
-	const drinkSizes = ["Small", "Medium", "Large"];
+	const getCurrentDate = () => {
+		var date = new Date().getDate();
+		var month = new Date().getMonth() + 1;
+		var year = new Date().getFullYear();
+
+		return year + "-" + month + "-" + date;
+	};
+
+	const currentDate = getCurrentDate();
 
 	const AddToFirestore = async (data) => {
+		let history = [];
+
+		let log = {
+			type: "",
+			name: "",
+			amount: "",
+			date: "",
+			totalValue: "",
+		};
+
+		log.type = "Initialized";
+		log.name = data.name;
+		log.amount = parseInt(data.quantity);
+		log.date = currentDate;
+		log.totalValue = "n/a";
+
+		history.push(log);
+
 		if (currentCategory === "Food") {
 			await setDoc(
 				doc(db, "products", data.name),
@@ -107,6 +133,7 @@ function AddProductForm(props) {
 					product_vatPercent: parseInt(data.vatPercent),
 					product_imageURI: data.imageURI,
 					recipe: data.foodRecipe,
+					history: history,
 				},
 				{ merge: true }
 			);
@@ -122,6 +149,7 @@ function AddProductForm(props) {
 					product_vatPercent: parseInt(data.vatPercent),
 					product_imageURI: data.imageURI,
 					recipe: data.drinkRecipe,
+					history: history,
 				},
 				{ merge: true }
 			);
