@@ -76,7 +76,11 @@ function PosComponent(props) {
 						{count}
 					</Text>
 
-					<TouchableOpacity onPress={props.quantity > 0 ? onPressAdd : null}>
+					<TouchableOpacity
+						onPress={
+							props.quantity > 0 && count < props.quantity ? onPressAdd : null
+						}
+					>
 						<Ionicons name="add-circle-outline" size={25} color={"black"} />
 					</TouchableOpacity>
 				</View>
