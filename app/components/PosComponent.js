@@ -76,7 +76,7 @@ function PosComponent(props) {
 						{count}
 					</Text>
 
-					<TouchableOpacity onPress={onPressAdd}>
+					<TouchableOpacity onPress={props.quantity > 0 ? onPressAdd : null}>
 						<Ionicons name="add-circle-outline" size={25} color={"black"} />
 					</TouchableOpacity>
 				</View>
@@ -143,16 +143,20 @@ function PosComponent(props) {
 				<TouchableOpacity
 					style={styles.buttonInside}
 					onPress={() => {
-						props.getOrderedProduct(
-							props.name,
-							count,
-							props.category === "Food" ? props.sellingPrice : itemPrice,
-							props.vat,
-							props.imageURI,
-							selectedSize
-						);
-						setCount(0);
-						SetSelectedSize("");
+						if (props.quantity > 0) {
+							props.getOrderedProduct(
+								props.name,
+								count,
+								props.category === "Food" ? props.sellingPrice : itemPrice,
+								props.vat,
+								props.imageURI,
+								selectedSize
+							);
+							setCount(0);
+							SetSelectedSize("");
+						} else {
+							console.log("Not enough products!");
+						}
 					}}
 				>
 					<Ionicons name="cart-outline" size={35} color={"white"} />
