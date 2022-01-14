@@ -81,7 +81,13 @@ function PosComponent(props) {
 					</TouchableOpacity>
 				</View>
 				{props.category != "Food" ? (
-					<View style={{ flexDirection: "row", alignItems: "center" }}>
+					<View
+						style={{
+							flexDirection: "row",
+							alignItems: "center",
+							marginTop: 50,
+						}}
+					>
 						<TouchableOpacity
 							style={[
 								styles.sizeButton,
