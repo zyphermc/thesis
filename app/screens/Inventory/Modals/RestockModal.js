@@ -83,6 +83,7 @@ function RestockModal(props) {
 					initialValues={initialValues}
 					onSubmit={(values) => {
 						SetTransactionLog(values);
+						props.CloseModal();
 					}}
 				>
 					{(props) => (
@@ -150,7 +151,7 @@ function RestockModal(props) {
 								style={styles.button}
 							>
 								<Text style={{ fontSize: 18, color: "white" }}>
-									Submit Changes
+									Submit Restock
 								</Text>
 							</TouchableOpacity>
 						</View>

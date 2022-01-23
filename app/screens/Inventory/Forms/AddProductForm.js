@@ -19,7 +19,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { Picker } from "@react-native-picker/picker";
 
 function AddProductForm(props) {
-	const measurements = ["grams", "mL"];
+	const measurements = ["grams", "mL", "pcs"];
 	const [ingredientsNames, SetIngredientNames] = useState([]);
 
 	useEffect(async () => {

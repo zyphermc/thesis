@@ -8,6 +8,7 @@ import {
 	Image,
 	TextInput,
 	ScrollView,
+	Modal,
 } from "react-native";
 
 import {
@@ -29,9 +30,13 @@ import { Picker } from "@react-native-picker/picker";
 
 import { db } from "../../../../firebase-config";
 
+//Modals
+import ProductHistoryModal from "./ProductHistoryModal";
+
 function ViewProductModal(props) {
 	const [productData, SetProductData] = useState([]);
 	const [isEditable, SetIsEditable] = useState(false);
+	const [historyModalOpen, SetHistoryModalOpen] = useState(false);
 	const [ingredientsNames, SetIngredientNames] = useState([]);
 	const measurements = ["grams", "mL"];
 
@@ -106,9 +111,12 @@ function ViewProductModal(props) {
 		}
 	};
 
-	const ShowHistoryLog = () => {
-		//OPEN MODAL DRAWER THAT SHOWS TRANSACTION HISTORY
-		console.log("History Shown");
+	const OpenHistoryModal = () => {
+		SetHistoryModalOpen(true);
+	};
+
+	const CloseHistoryModal = () => {
+		SetHistoryModalOpen(false);
 	};
 
 	function FormComponent(props) {
@@ -146,6 +154,7 @@ function ViewProductModal(props) {
 						onSubmit={(values) => {
 							console.log(values);
 							AddToFirestore(values);
+							SetIsEditable(false);
 						}}
 					>
 						{(props) => (
@@ -502,7 +511,7 @@ function ViewProductModal(props) {
 				<Ionicons name="close-outline" size={40} color={"black"} />
 			</TouchableOpacity>
 
-			<TouchableOpacity style={styles.historyButton} onPress={ShowHistoryLog}>
+			<TouchableOpacity style={styles.historyButton} onPress={OpenHistoryModal}>
 				<Ionicons name="newspaper-outline" size={40} color={"black"} />
 			</TouchableOpacity>
 
@@ -522,6 +531,17 @@ function ViewProductModal(props) {
 					color={"black"}
 				/>
 			</TouchableOpacity>
+
+			<Modal
+				visible={historyModalOpen}
+				animationType="slide"
+				onRequestClose={CloseHistoryModal}
+			>
+				<ProductHistoryModal
+					CloseModal={CloseHistoryModal}
+					productData={productData}
+				/>
+			</Modal>
 
 			<View style={styles.imageContainer}>
 				<Image

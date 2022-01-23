@@ -23,11 +23,13 @@ import { db } from "../../../../firebase-config";
 
 //Restock Modal
 import RestockModal from "./RestockModal";
+import IngredientHistoryModal from "./IngredientHistoryModal";
 
 function ViewIngredientModal(props) {
 	const [ingredientData, SetIngredientData] = useState([]);
 	const [isEditable, SetIsEditable] = useState(false);
 	const [restockModalOpen, SetRestockModalOpen] = useState(false);
+	const [historyModalOpen, SetHistoryModalOpen] = useState(false);
 
 	useEffect(() => {
 		let isMounted = true;
@@ -36,9 +38,30 @@ function ViewIngredientModal(props) {
 		const getIngredientData = async () => {
 			const unsub = onSnapshot(
 				doc(db, "ingredients", props.itemName),
-				(doc) => {
+				async (document) => {
 					if (isMounted) {
-						SetIngredientData(doc.data());
+						SetIngredientData(document.data());
+
+						const buyLogs = document.data().history.filter((item) => {
+							return item.type == "Initialized" || item.type == "Restock";
+						});
+
+						const buyCount = buyLogs.length;
+
+						let tempPrice = 0;
+
+						buyLogs.map((entry) => {
+							tempPrice += entry.price;
+						});
+
+						const average_price = tempPrice / buyCount;
+
+						await updateDoc(
+							doc(db, "ingredients", document.data().ingredient_name),
+							{
+								ingredient_unitPrice_avg: Math.round(average_price),
+							}
+						);
 					}
 				}
 			);
@@ -51,8 +74,7 @@ function ViewIngredientModal(props) {
 	}, []);
 
 	const ShowHistoryLog = () => {
-		//OPEN MODAL DRAWER THAT SHOWS TRANSACTION HISTORY
-		console.log("History Shown");
+		OpenHistoryModal();
 	};
 
 	const AddToFirestore = async (data) => {
@@ -62,7 +84,6 @@ function ViewIngredientModal(props) {
 				ingredient_name: data.name,
 				ingredient_category: data.category,
 				ingredient_stock: parseInt(data.quantity),
-				ingredient_unitPrice_avg: parseInt(data.price),
 				unit_of_measurement: data.unitOfMeasurement,
 				imageURI: data.imageURI,
 				safety_stock: parseInt(data.safetyStock),
@@ -75,12 +96,20 @@ function ViewIngredientModal(props) {
 		);
 	};
 
-	const OpenModal = () => {
+	const OpenRestockModal = () => {
 		SetRestockModalOpen(true);
 	};
 
-	const CloseModal = () => {
+	const CloseRestockModal = () => {
 		SetRestockModalOpen(false);
+	};
+
+	const OpenHistoryModal = () => {
+		SetHistoryModalOpen(true);
+	};
+
+	const CloseHistoryModal = () => {
+		SetHistoryModalOpen(false);
 	};
 
 	function FormComponent(props) {
@@ -89,7 +118,6 @@ function ViewIngredientModal(props) {
 				name: ingredientData.ingredient_name,
 				category: ingredientData.ingredient_category,
 				quantity: ingredientData.ingredient_stock,
-				price: ingredientData.ingredient_unitPrice_avg,
 				unitOfMeasurement: ingredientData.unit_of_measurement,
 				imageURI: ingredientData.imageURI,
 				safetyStock: ingredientData.safety_stock,
@@ -104,12 +132,21 @@ function ViewIngredientModal(props) {
 					<Modal
 						visible={restockModalOpen}
 						animationType="slide"
-						onRequestClose={() => {
-							closeModal();
-						}}
+						onRequestClose={CloseRestockModal}
 					>
 						<RestockModal
-							CloseModal={CloseModal}
+							CloseModal={CloseRestockModal}
+							ingredientData={ingredientData}
+						/>
+					</Modal>
+
+					<Modal
+						visible={historyModalOpen}
+						animationType="slide"
+						onRequestClose={CloseHistoryModal}
+					>
+						<IngredientHistoryModal
+							CloseModal={CloseHistoryModal}
 							ingredientData={ingredientData}
 						/>
 					</Modal>
@@ -156,7 +193,7 @@ function ViewIngredientModal(props) {
 										/>
 										<TouchableOpacity
 											onPress={() => {
-												OpenModal();
+												OpenRestockModal();
 											}}
 										>
 											<Ionicons
@@ -177,13 +214,10 @@ function ViewIngredientModal(props) {
 										/>
 									</View>
 									<View style={styles.infoContainer}>
-										<Text style={styles.infoText}>Init. Buying Price (₱):</Text>
+										<Text style={styles.infoText}>Avg. Buying Price (₱):</Text>
 										<TextInput
 											style={styles.input}
-											placeholder="Initial Buying Price in ₱"
-											onChangeText={props.handleChange("price")}
 											defaultValue={ingredientData.ingredient_unitPrice_avg.toString()}
-											keyboardType="numeric"
 											editable={false}
 										/>
 									</View>
