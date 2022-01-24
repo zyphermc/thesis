@@ -1,5 +1,12 @@
 import React from "react";
-import { Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
+import {
+	Text,
+	View,
+	StyleSheet,
+	Image,
+	TouchableOpacity,
+	Alert,
+} from "react-native";
 import { useState } from "react";
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -78,7 +85,7 @@ function PosComponent(props) {
 
 					<TouchableOpacity
 						onPress={
-							props.quantity > 0 && count < props.quantity ? onPressAdd : null
+							props.quantity > 0 && count <= props.quantity ? onPressAdd : null
 						}
 					>
 						<Ionicons name="add-circle-outline" size={25} color={"black"} />
@@ -160,6 +167,7 @@ function PosComponent(props) {
 							SetSelectedSize("");
 						} else {
 							console.log("Not enough products!");
+							Alert.alert("Not enough products!");
 						}
 					}}
 				>
