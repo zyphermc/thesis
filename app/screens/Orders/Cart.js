@@ -24,7 +24,9 @@ import { db } from "../../../firebase-config";
 import CartComponent from "../../components/CartComponent";
 
 function Cart(props) {
-	const { orderProductList } = props.route.params;
+	const [orderProductList, SetOrderProductList] = useState(
+		props.route.params.orderProductList
+	);
 	const [products, SetProducts] = useState([]);
 	const [totalValue, setTotalValue] = useState(0);
 
@@ -51,6 +53,14 @@ function Cart(props) {
 
 	const navigation = useNavigation();
 
+	const getTotalValue = () => {
+		let temp = 0;
+		orderProductList.forEach((element) => {
+			temp += element.sellingPrice * element.quantity;
+		});
+		setTotalValue(temp);
+	};
+
 	useEffect(() => {
 		const GetProducts = async () => {
 			const myProducts = [];
@@ -65,13 +75,6 @@ function Cart(props) {
 
 		GetProducts();
 
-		const getTotalValue = () => {
-			let temp = 0;
-			orderProductList.forEach((element) => {
-				temp += element.sellingPrice * element.quantity;
-			});
-			setTotalValue(temp);
-		};
 		getTotalValue();
 	}, []);
 
@@ -191,13 +194,39 @@ function Cart(props) {
 	const UpdateTransactionLog = () => {
 		//Deduct Items and Update Transaction
 		orderProductList.forEach((order) => {
-			deductItems(
-				order.productName,
-				order.quantity,
-				order.size,
-				order.sellingPrice
-			);
+			if (order.quantity > 0) {
+				deductItems(
+					order.productName,
+					order.quantity,
+					order.size,
+					order.sellingPrice
+				);
+			}
 		});
+	};
+
+	const RemoveProductFromList = (name) => {
+		if (orderProductList.length > 0) {
+			let productIndex = orderProductList.findIndex((item) => {
+				return item.productName == name;
+			});
+
+			if (productIndex >= 0) {
+				if (orderProductList[productIndex].quantity > 0) {
+					let tempList = orderProductList;
+					tempList[productIndex].quantity--;
+					SetOrderProductList(tempList);
+					getTotalValue();
+
+					if (orderProductList[productIndex].quantity <= 0) {
+						const filteredList = orderProductList.filter((item) => {
+							return item.productName != name;
+						});
+						SetOrderProductList(filteredList);
+					}
+				}
+			}
+		}
 	};
 
 	const GetHeader = () => {
@@ -282,7 +311,7 @@ function Cart(props) {
 							justifyContent: "center",
 						}}
 						onPress={() => {
-							if (cashTendered >= totalValue) {
+							if (cashTendered >= totalValue && totalValue > 0) {
 								navigation.navigate("CheckOut", {
 									orderProductList: orderProductList,
 									Subtotal: Subtotal,
@@ -290,10 +319,17 @@ function Cart(props) {
 									totalValue: totalValue,
 									cashTendered: parseInt(cashTendered),
 								});
-
+								Tax = 0;
+								Subtotal = 0;
+								setTotalValue(0);
+								SetOrderProductList([]);
 								UpdateTransactionLog();
 							} else {
-								Alert.alert("Not enough cash!");
+								if (totalValue > 0) {
+									Alert.alert("Not enough cash!");
+								} else {
+									Alert.alert("No products in cart!");
+								}
 							}
 						}}
 					>
@@ -325,6 +361,7 @@ function Cart(props) {
 						sellingPrice={item.sellingPrice}
 						size={item.size}
 						vat={item.vat}
+						RemoveProductFromList={RemoveProductFromList}
 					/>
 				)}
 				ListHeaderComponent={GetHeader}

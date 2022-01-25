@@ -46,7 +46,16 @@ function PosComponent(props) {
 				}}
 			/>
 			<View style={styles.textContainer}>
-				<Text style={styles.textStyle}>Name: {props.name}</Text>
+				<Text style={styles.textStyle}>
+					Name:{" "}
+					<Text
+						style={{
+							textDecorationLine: props.quantity <= 0 ? "line-through" : null,
+						}}
+					>
+						{props.name}
+					</Text>
+				</Text>
 				<Text style={styles.textStyle}>Category: {props.category}</Text>
 				<Text style={styles.textStyle}>Quantity: {props.quantity}</Text>
 				<Text style={styles.textStyle}>

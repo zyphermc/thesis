@@ -6,10 +6,14 @@ import {
 	TouchableOpacity,
 	FlatList,
 	Alert,
+	StyleSheet,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import CheckOutComponent from "../../components/CheckOutComponent";
 import moment from "moment";
+
+//Icons
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 function CheckOut(props) {
 	const { orderProductList, cashTendered, Tax, Subtotal, totalValue } =
@@ -27,13 +31,21 @@ function CheckOut(props) {
 	return (
 		<View style={{ flex: 1 }}>
 			<View>
+				<TouchableOpacity
+					style={styles.closeButton}
+					onPress={() => {
+						navigation.navigate("Point of Sale");
+					}}
+				>
+					<Ionicons name="close-outline" size={40} color={"black"} />
+				</TouchableOpacity>
 				<View
 					style={{
 						alignItems: "center",
 						justifyContent: "center",
 					}}
 				>
-					<TouchableOpacity
+					{/* <TouchableOpacity
 						style={{
 							position: "absolute",
 							height: 30,
@@ -52,7 +64,7 @@ function CheckOut(props) {
 						}}
 					>
 						<Text>Print Receipt</Text>
-					</TouchableOpacity>
+					</TouchableOpacity> */}
 					<TouchableOpacity
 						style={{
 							height: 50,
@@ -191,5 +203,12 @@ function CheckOut(props) {
 		</View>
 	);
 }
+
+const styles = StyleSheet.create({
+	closeButton: {
+		position: "absolute",
+		right: 10,
+	},
+});
 
 export default CheckOut;

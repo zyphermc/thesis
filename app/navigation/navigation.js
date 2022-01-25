@@ -10,11 +10,12 @@ import { createMaterialTopTabNavigator } from "@react-navigation/material-top-ta
 //Screens
 import LoginScreen from "../screens/Login/LoginScreen";
 import HomeScreen from "../screens/Home/HomeScreen";
+import ReportsScreen from "../screens/Reports/ReportsScreen";
 import InventoryScreen from "../screens/Inventory/InventoryScreen";
 import OrderScreen from "../screens/Orders/OrderScreen";
 import CustomDrawer from "../components/CustomDrawer";
 import Cart from "../screens/Orders/Cart";
-import CheckOut from "../screens/Orders/CheckOut"
+import CheckOut from "../screens/Orders/CheckOut";
 
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -87,6 +88,16 @@ function DrawerNavigation(props) {
 					),
 				}}
 			/>
+			<Drawer.Screen
+				name="Reports"
+				component={ReportsScreen}
+				initialParams={{ isAdmin: isAdmin }}
+				options={{
+					drawerIcon: (color) => (
+						<Ionicons name="bar-chart-outline" size={22} color={color} />
+					),
+				}}
+			/>
 		</Drawer.Navigator>
 	);
 }
@@ -101,7 +112,7 @@ function TabNavigation(props) {
 			screenOptions={{
 				activeTintColor: "cyan",
 				labelStyle: { fontSize: 12 },
-				tabBarStyle: { marginTop: 20 }
+				tabBarStyle: { marginTop: 20 },
 			}}
 		>
 			<Tab.Screen
@@ -109,7 +120,7 @@ function TabNavigation(props) {
 				component={Cart}
 				initialParams={{
 					products: products,
-					orderProductList: orderProductList
+					orderProductList: orderProductList,
 				}}
 				options={{ tabBarLabel: "Cart", title: "Cart" }}
 			/>

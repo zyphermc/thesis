@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
 	Text,
 	View,
@@ -11,42 +11,59 @@ import {
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 function CartComponent(props) {
-	const { name, imageURI, quantity, sellingPrice, vat, size } = props;
+	const { name, imageURI, sellingPrice, size } = props;
+	const [quantity, SetQuantity] = useState(props.quantity);
 	return (
 		<View>
-			<View style={styles.container}>
-				<Image source={{ uri: props.imageURI }} style={styles.image} />
-				<Text style={styles.textStyle}>
-					{name} {size}
-				</Text>
-				<Text
-					style={{
-						marginLeft: 15,
-						fontWeight: "bold",
-						fontSize: 15,
-					}}
-				>
-					{quantity}
-				</Text>
-				<Text
-					style={{
-						marginLeft: 45,
-						fontWeight: "bold",
-						fontSize: 15,
-					}}
-				>
-					{sellingPrice}
-				</Text>
-				<Text
-					style={{
-						marginLeft: 42,
-						fontWeight: "bold",
-						fontSize: 15,
-					}}
-				>
-					{quantity * sellingPrice}
-				</Text>
-			</View>
+			{quantity > 0 ? (
+				<View style={styles.container}>
+					<Image source={{ uri: imageURI }} style={styles.image} />
+					<Text style={styles.textStyle}>
+						{name} {size}
+					</Text>
+					<Text
+						style={{
+							marginLeft: 15,
+							fontWeight: "bold",
+							fontSize: 15,
+						}}
+					>
+						{quantity}
+					</Text>
+					<Text
+						style={{
+							marginLeft: 45,
+							fontWeight: "bold",
+							fontSize: 15,
+						}}
+					>
+						{sellingPrice}
+					</Text>
+					<Text
+						style={{
+							marginLeft: 42,
+							fontWeight: "bold",
+							fontSize: 15,
+						}}
+					>
+						{quantity * sellingPrice}
+					</Text>
+
+					<View style={{ position: "absolute", right: 5 }}>
+						<TouchableOpacity
+							onPress={() => {
+								props.RemoveProductFromList(name);
+								if (quantity > 0) {
+									let tempQty = quantity;
+									SetQuantity(--tempQty);
+								}
+							}}
+						>
+							<Ionicons name="remove-circle-outline" size={25} color={"red"} />
+						</TouchableOpacity>
+					</View>
+				</View>
+			) : null}
 		</View>
 	);
 }

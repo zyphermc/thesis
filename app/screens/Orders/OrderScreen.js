@@ -74,10 +74,6 @@ function OrderScreen({ route }) {
 		};
 	}, []);
 
-	const handleButtonAdd = () => {
-		//add to cart
-	};
-
 	const SearchNameProduct = (input) => {
 		const data = products;
 
@@ -131,7 +127,7 @@ function OrderScreen({ route }) {
 			}
 		}
 	};
-
+	//console.log(orderProductList[0]);
 	const ClearCart = () => {
 		orderProductList = [];
 	};
@@ -159,7 +155,6 @@ function OrderScreen({ route }) {
 							sellingPrice={item.product_sellingPrice}
 							selling_prices={item.selling_prices}
 							imageURI={item.product_imageURI}
-							handleButtonAdd={handleButtonAdd}
 							getOrderedProduct={getOrderedProduct}
 							vat={item.product_vatPercent}
 						/>
