@@ -117,7 +117,6 @@ function Cart(props) {
 				product_quantity: increment(-orderQuantity),
 				history: productHistory,
 			});
-			console.log("Order quantity: " + orderQuantity);
 
 			//Check if product is not drink (to not use size)
 			if (myProduct.product_category != "Drinks") {
@@ -222,7 +221,7 @@ function Cart(props) {
 						const filteredList = orderProductList.filter((item) => {
 							return item.productName != name;
 						});
-						SetOrderProductList(filteredList);
+						//SetOrderProductList(filteredList);
 					}
 				}
 			}
@@ -330,6 +329,7 @@ function Cart(props) {
 								} else {
 									Alert.alert("No products in cart!");
 								}
+								console.log(orderProductList);
 							}
 						}}
 					>

@@ -87,6 +87,10 @@ function OrderScreen({ route }) {
 		SetFilteredProducts(searchData);
 	};
 
+	const GetOrderProductList = () => {
+		return orderProductList;
+	};
+
 	let orderProductList = [];
 
 	let OrderedProduct = {
@@ -127,7 +131,7 @@ function OrderScreen({ route }) {
 			}
 		}
 	};
-	//console.log(orderProductList[0]);
+
 	const ClearCart = () => {
 		orderProductList = [];
 	};
@@ -157,6 +161,7 @@ function OrderScreen({ route }) {
 							imageURI={item.product_imageURI}
 							getOrderedProduct={getOrderedProduct}
 							vat={item.product_vatPercent}
+							GetOrderProductList={GetOrderProductList}
 						/>
 					)}
 				/>

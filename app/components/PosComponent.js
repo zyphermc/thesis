@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
 	Text,
 	View,
@@ -7,22 +7,41 @@ import {
 	TouchableOpacity,
 	Alert,
 } from "react-native";
-import { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
+
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 function PosComponent(props) {
-	const CalculateQuantity = () => {
-		//Calculates how many orders can the user make based on recipe
-		console.log("Quantity Calculated");
-	};
 	const [count, setCount] = useState(0);
 	const onPressAdd = () => setCount((prevCount) => prevCount + 1);
 	const onPressMinus = () => setCount((prevCount) => prevCount - 1, 0);
 	const [itemPrice, SetItemPrice] = useState(0);
 	const [selectedSize, SetSelectedSize] = useState("");
+	const [availableQuantity, SetAvailableQuantity] = useState(0);
+	const navigation = useNavigation();
 
 	let selectedSizeFast = "";
+
+	const CalculateQuantity = () => {
+		//Calculates how many orders can the user make based on recipe
+		let orderList = props.GetOrderProductList();
+
+		if (orderList.length > 0) {
+			const order = orderList.find((item) => {
+				return item.productName == props.name;
+			});
+
+			if (typeof order != "undefined") {
+				const tempQuantity = props.quantity - order.quantity;
+
+				SetAvailableQuantity(tempQuantity);
+			}
+		} else {
+			SetAvailableQuantity(props.quantity);
+		}
+	};
 
 	const GetItemPrice = () => {
 		if (props.category != "Food") {
@@ -33,6 +52,12 @@ function PosComponent(props) {
 			SetItemPrice(tempPrice.selling_price);
 		}
 	};
+
+	useFocusEffect(
+		React.useCallback(() => {
+			CalculateQuantity();
+		}, [])
+	);
 
 	return (
 		<View style={styles.container}>
@@ -57,7 +82,7 @@ function PosComponent(props) {
 					</Text>
 				</Text>
 				<Text style={styles.textStyle}>Category: {props.category}</Text>
-				<Text style={styles.textStyle}>Quantity: {props.quantity}</Text>
+				<Text style={styles.textStyle}>Quantity: {availableQuantity}</Text>
 				<Text style={styles.textStyle}>
 					Selling Price: ₱
 					{props.category === "Food" ? props.sellingPrice : itemPrice}
@@ -65,10 +90,10 @@ function PosComponent(props) {
 				<Text
 					style={[
 						styles.textStyle,
-						{ color: props.quantity > 0 ? "green" : "red" },
+						{ color: availableQuantity > 0 ? "green" : "red" },
 					]}
 				>
-					{props.quantity > 0 ? "Available" : "Not Available"}
+					{availableQuantity > 0 ? "Available" : "Not Available"}
 				</Text>
 			</View>
 			<View
@@ -94,7 +119,9 @@ function PosComponent(props) {
 
 					<TouchableOpacity
 						onPress={
-							props.quantity > 0 && count <= props.quantity ? onPressAdd : null
+							availableQuantity > 0 && count < availableQuantity
+								? onPressAdd
+								: null
 						}
 					>
 						<Ionicons name="add-circle-outline" size={25} color={"black"} />
@@ -163,7 +190,7 @@ function PosComponent(props) {
 				<TouchableOpacity
 					style={styles.buttonInside}
 					onPress={() => {
-						if (props.quantity > 0) {
+						if (availableQuantity > 0) {
 							props.getOrderedProduct(
 								props.name,
 								count,
@@ -172,10 +199,11 @@ function PosComponent(props) {
 								props.imageURI,
 								selectedSize
 							);
+
 							setCount(0);
 							SetSelectedSize("");
+							CalculateQuantity();
 						} else {
-							console.log("Not enough products!");
 							Alert.alert("Not enough products!");
 						}
 					}}
