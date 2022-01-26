@@ -1,10 +1,15 @@
 import React from "react";
-import { Text, StyleSheet, View } from "react-native";
+import { Text, StyleSheet, View, Image, Button, Alert, TouchableOpacity } from "react-native";
 
 function HomeScreen(props) {
+	const onPress = () => console.log("hello");
 	return (
+
 		<View style={styles.container}>
-			<Text>Hello Home</Text>
+			<Image
+				source={require('../../assets/images/home.jpg')}
+				style={{ width: '100%', height: '100%', resizeMode: 'cover' }}>
+			</Image>
 		</View>
 	);
 }

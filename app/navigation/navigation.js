@@ -48,7 +48,7 @@ function DrawerNavigation(props) {
 			initialRouteName="Home"
 			screenOptions={{
 				headerStyle: {
-					backgroundColor: "#f4511e",
+					backgroundColor: "#644A33",
 				},
 				headerTintColor: "#fff",
 			}}
