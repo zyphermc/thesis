@@ -2,9 +2,7 @@ import "react-native-gesture-handler";
 import { SafeAreaView, StyleSheet, LogBox } from "react-native";
 
 import Navigation from "./app/navigation";
-
-//Test Environment for testing features
-import Test from "./app/screens/Test";
+import FlashMessage from "react-native-flash-message";
 
 export default function App() {
 	LogBox.ignoreLogs([
@@ -13,7 +11,12 @@ export default function App() {
 		"Warning: Can't perform a React state update on an unmounted component.",
 	]);
 
-	return <Navigation />;
+	return (
+		<>
+			<Navigation />
+			<FlashMessage position="bottom" floating={true} icon={"auto"} />
+		</>
+	);
 }
 
 const styles = StyleSheet.create({

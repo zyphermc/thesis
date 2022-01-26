@@ -8,6 +8,7 @@ import {
 	Button,
 	Alert,
 } from "react-native";
+import { showMessage } from "react-native-flash-message";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 function CartComponent(props) {
@@ -52,10 +53,22 @@ function CartComponent(props) {
 					<View style={{ position: "absolute", right: 5 }}>
 						<TouchableOpacity
 							onPress={() => {
-								props.RemoveProductFromList(name);
+								props.RemoveProductFromList(name, size);
 								if (quantity > 0) {
 									let tempQty = quantity;
 									SetQuantity(--tempQty);
+
+									if (size != "") {
+										showMessage({
+											message: `Successfully removed 1 ${size} ${name}`,
+											type: "success",
+										});
+									} else {
+										showMessage({
+											message: `Successfully removed 1 ${name}`,
+											type: "success",
+										});
+									}
 								}
 							}}
 						>

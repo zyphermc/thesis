@@ -5,11 +5,6 @@ import { Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 function ProductItemComponent(props) {
-	const CalculateQuantity = () => {
-		//Calculates how many orders can the user make based on recipe
-		console.log("Quantity Calculated");
-	};
-
 	return (
 		<View style={styles.container}>
 			<Image
@@ -24,24 +19,61 @@ function ProductItemComponent(props) {
 			<View style={styles.textContainer}>
 				<Text style={styles.textStyle}>
 					Name:{" "}
-					<Text
-						style={{
-							textDecorationLine: props.quantity <= 0 ? "line-through" : null,
-						}}
-					>
-						{props.name}
-					</Text>
+					{props.category == "Food" ? (
+						<Text
+							style={{
+								textDecorationLine: props.quantity <= 0 ? "line-through" : null,
+							}}
+						>
+							{props.name}
+						</Text>
+					) : (
+						<Text
+							style={{
+								textDecorationLine:
+									props.quantities[0].quantity <= 0 ? "line-through" : null,
+							}}
+						>
+							{props.name}
+						</Text>
+					)}
 				</Text>
 				<Text style={styles.textStyle}>Category: {props.category}</Text>
-				<Text style={styles.textStyle}>Quantity: {props.quantity}</Text>
-				<Text
-					style={[
-						styles.textStyle,
-						{ color: props.quantity > 0 ? "green" : "red" },
-					]}
-				>
-					{props.quantity > 0 ? "Available" : "Not Available"}
-				</Text>
+				{props.category == "Food" ? (
+					<Text style={styles.textStyle}>Quantity: {props.quantity}</Text>
+				) : (
+					<View>
+						<Text style={styles.textStyle}>Quantity: </Text>
+						<Text style={styles.textStyle}>
+							Small - {props.quantities[0].quantity}
+						</Text>
+						<Text style={styles.textStyle}>
+							Medium - {props.quantities[1].quantity}
+						</Text>
+						<Text style={styles.textStyle}>
+							Large - {props.quantities[2].quantity}
+						</Text>
+					</View>
+				)}
+				{props.category == "Food" ? (
+					<Text
+						style={[
+							styles.textStyle,
+							{ color: props.quantity > 0 ? "green" : "red" },
+						]}
+					>
+						{props.quantity > 0 ? "Available" : "Not Available"}
+					</Text>
+				) : (
+					<Text
+						style={[
+							styles.textStyle,
+							{ color: props.quantities[0].quantity > 0 ? "green" : "red" },
+						]}
+					>
+						{props.quantities[0].quantity > 0 ? "Available" : "Not Available"}
+					</Text>
+				)}
 			</View>
 			<View
 				style={{

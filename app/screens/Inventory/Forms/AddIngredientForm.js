@@ -9,6 +9,7 @@ import {
 import { Formik } from "formik";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../../../firebase-config";
+import { showMessage } from "react-native-flash-message";
 
 //Dropdown Menu
 import { Picker } from "@react-native-picker/picker";
@@ -87,6 +88,11 @@ function AddIngredientForm(props) {
 			},
 			{ merge: true }
 		);
+
+		showMessage({
+			message: `Successfully added ${data.name}`,
+			type: "success",
+		});
 	};
 
 	return (

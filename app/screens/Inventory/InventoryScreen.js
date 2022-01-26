@@ -20,6 +20,8 @@ import {
 	updateDoc,
 } from "firebase/firestore";
 
+import { showMessage } from "react-native-flash-message";
+
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
 
@@ -187,6 +189,11 @@ function InventoryScreen({ route }) {
 		} else {
 			await deleteDoc(doc(db, "products", name));
 		}
+
+		showMessage({
+			message: `Succesfully deleted ${name}`,
+			type: "success",
+		});
 	};
 
 	const handleOpenModal = () => {
@@ -278,6 +285,7 @@ function InventoryScreen({ route }) {
 								name={item.product_name}
 								category={item.product_category}
 								quantity={item.product_quantity}
+								quantities={item.product_quantities}
 								sellingPrice={item.product_sellingPrice}
 								imageURI={item.product_imageURI}
 								handleButtonView={handleButtonView}

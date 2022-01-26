@@ -1,14 +1,7 @@
-import React, { useState, useEffect } from "react";
-import {
-	Text,
-	View,
-	StyleSheet,
-	Image,
-	TouchableOpacity,
-	Alert,
-} from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import React, { useState } from "react";
+import { Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import { showMessage } from "react-native-flash-message";
 
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -20,27 +13,43 @@ function PosComponent(props) {
 	const [itemPrice, SetItemPrice] = useState(0);
 	const [selectedSize, SetSelectedSize] = useState("");
 	const [availableQuantity, SetAvailableQuantity] = useState(0);
-	const navigation = useNavigation();
+
+	//Drink quantities
+	const [availableQuantitySmall, SetAvailableQuantitySmall] = useState(0);
+	const [availableQuantityMedium, SetAvailableQuantityMedium] = useState(0);
+	const [availableQuantityLarge, SetAvailableQuantityLarge] = useState(0);
 
 	let selectedSizeFast = "";
 
-	const CalculateQuantity = () => {
-		//Calculates how many orders can the user make based on recipe
+	//Calculates how many orders the user can make based on recipe [Food]
+	const CalculateQuantityFood = () => {
 		let orderList = props.GetOrderProductList();
 
 		if (orderList.length > 0) {
+			//Find item in order list
 			const order = orderList.find((item) => {
-				return item.productName == props.name;
+				if (item.size == "") {
+					return item.productName == props.name;
+				} else {
+					return item.productName == props.name && item.size == selectedSize;
+				}
 			});
 
+			//If order is not empty
 			if (typeof order != "undefined") {
 				const tempQuantity = props.quantity - order.quantity;
-
 				SetAvailableQuantity(tempQuantity);
 			}
 		} else {
 			SetAvailableQuantity(props.quantity);
 		}
+	};
+
+	//Calculates how many orders the user can make based on recipe [Drinks]
+	const CalculateQuantityDrink = () => {
+		SetAvailableQuantitySmall(props.quantities[0].quantity);
+		SetAvailableQuantityMedium(props.quantities[1].quantity);
+		SetAvailableQuantityLarge(props.quantities[2].quantity);
 	};
 
 	const GetItemPrice = () => {
@@ -55,7 +64,12 @@ function PosComponent(props) {
 
 	useFocusEffect(
 		React.useCallback(() => {
-			CalculateQuantity();
+			if (props.category == "Food") {
+				CalculateQuantityFood();
+			} else {
+				CalculateQuantityDrink();
+				console.log("calculated quantity of drink");
+			}
 		}, [])
 	);
 
@@ -82,19 +96,45 @@ function PosComponent(props) {
 					</Text>
 				</Text>
 				<Text style={styles.textStyle}>Category: {props.category}</Text>
-				<Text style={styles.textStyle}>Quantity: {availableQuantity}</Text>
+				{props.category == "Food" ? (
+					<Text style={styles.textStyle}>Quantity: {availableQuantity}</Text>
+				) : (
+					<View>
+						<Text style={styles.textStyle}>Quantity: </Text>
+						<Text style={styles.textStyle}>
+							Small - {availableQuantitySmall}
+						</Text>
+						<Text style={styles.textStyle}>
+							Medium - {availableQuantityMedium}
+						</Text>
+						<Text style={styles.textStyle}>
+							Large - {availableQuantityLarge}
+						</Text>
+					</View>
+				)}
 				<Text style={styles.textStyle}>
 					Selling Price: ₱
 					{props.category === "Food" ? props.sellingPrice : itemPrice}
 				</Text>
-				<Text
-					style={[
-						styles.textStyle,
-						{ color: availableQuantity > 0 ? "green" : "red" },
-					]}
-				>
-					{availableQuantity > 0 ? "Available" : "Not Available"}
-				</Text>
+				{props.category == "Food" ? (
+					<Text
+						style={[
+							styles.textStyle,
+							{ color: availableQuantity > 0 ? "green" : "red" },
+						]}
+					>
+						{availableQuantity > 0 ? "Available" : "Not Available"}
+					</Text>
+				) : (
+					<Text
+						style={[
+							styles.textStyle,
+							{ color: availableQuantitySmall > 0 ? "green" : "red" },
+						]}
+					>
+						{availableQuantitySmall > 0 ? "Available" : "Not Available"}
+					</Text>
+				)}
 			</View>
 			<View
 				style={{
@@ -107,6 +147,11 @@ function PosComponent(props) {
 						onPress={() => {
 							if (count > 0) {
 								onPressMinus();
+							} else {
+								showMessage({
+									message: "Nothing to remove!",
+									type: "danger",
+								});
 							}
 						}}
 					>
@@ -118,11 +163,61 @@ function PosComponent(props) {
 					</Text>
 
 					<TouchableOpacity
-						onPress={
-							availableQuantity > 0 && count < availableQuantity
-								? onPressAdd
-								: null
-						}
+						onPress={() => {
+							if (props.category == "Food") {
+								if (availableQuantity > 0 && count < availableQuantity) {
+									onPressAdd();
+								} else {
+									showMessage({
+										message: "Not enough products!",
+										type: "danger",
+									});
+								}
+							} else {
+								if (selectedSize == "Small") {
+									if (
+										availableQuantitySmall > 0 &&
+										count < availableQuantitySmall
+									) {
+										onPressAdd();
+									} else {
+										showMessage({
+											message: "Not enough products!",
+											type: "danger",
+										});
+									}
+								} else if (selectedSize == "Medium") {
+									if (
+										availableQuantityMedium > 0 &&
+										count < availableQuantityMedium
+									) {
+										onPressAdd();
+									} else {
+										showMessage({
+											message: "Not enough products!",
+											type: "danger",
+										});
+									}
+								} else if (selectedSize == "Large") {
+									if (
+										availableQuantityLarge > 0 &&
+										count < availableQuantityLarge
+									) {
+										onPressAdd();
+									} else {
+										showMessage({
+											message: "Not enough products!",
+											type: "danger",
+										});
+									}
+								} else {
+									showMessage({
+										message: "Choose a size!",
+										type: "warning",
+									});
+								}
+							}
+						}}
 					>
 						<Ionicons name="add-circle-outline" size={25} color={"black"} />
 					</TouchableOpacity>
@@ -190,21 +285,135 @@ function PosComponent(props) {
 				<TouchableOpacity
 					style={styles.buttonInside}
 					onPress={() => {
-						if (availableQuantity > 0) {
-							props.getOrderedProduct(
-								props.name,
-								count,
-								props.category === "Food" ? props.sellingPrice : itemPrice,
-								props.vat,
-								props.imageURI,
-								selectedSize
-							);
+						if (props.category == "Food") {
+							if (availableQuantity > 0 && count > 0) {
+								props.getOrderedProduct(
+									props.name,
+									count,
+									props.category === "Food" ? props.sellingPrice : itemPrice,
+									props.vat,
+									props.imageURI,
+									selectedSize
+								);
 
-							setCount(0);
-							SetSelectedSize("");
-							CalculateQuantity();
+								showMessage({
+									message: `Sucessfully added ${count} ${props.name}`,
+									type: "success",
+								});
+
+								setCount(0);
+								CalculateQuantityFood();
+							} else {
+								if (availableQuantity > 0 && count <= 0) {
+									showMessage({
+										message: "Nothing to add to cart!",
+										type: "warning",
+									});
+								} else {
+									showMessage({
+										message: "Not enough products!",
+										type: "danger",
+									});
+								}
+							}
 						} else {
-							Alert.alert("Not enough products!");
+							if (selectedSize == "Small") {
+								if (availableQuantitySmall > 0 && count > 0) {
+									props.getOrderedProduct(
+										props.name,
+										count,
+										props.category === "Food" ? props.sellingPrice : itemPrice,
+										props.vat,
+										props.imageURI,
+										selectedSize
+									);
+
+									showMessage({
+										message: `Sucessfully added ${count} ${selectedSize} ${props.name}`,
+										type: "success",
+									});
+
+									setCount(0);
+									SetSelectedSize("");
+									CalculateQuantityFood();
+								} else {
+									if (availableQuantitySmall > 0 && count <= 0) {
+										showMessage({
+											message: "Nothing to add to cart!",
+											type: "warning",
+										});
+									} else {
+										showMessage({
+											message: "Not enough products!",
+											type: "danger",
+										});
+									}
+								}
+							} else if (selectedSize == "Medium") {
+								if (availableQuantityMedium > 0 && count > 0) {
+									props.getOrderedProduct(
+										props.name,
+										count,
+										props.category === "Food" ? props.sellingPrice : itemPrice,
+										props.vat,
+										props.imageURI,
+										selectedSize
+									);
+
+									showMessage({
+										message: `Sucessfully added ${count} ${selectedSize} ${props.name}`,
+										type: "success",
+									});
+
+									setCount(0);
+									SetSelectedSize("");
+									CalculateQuantityFood();
+								} else {
+									if (availableQuantityMedium > 0 && count <= 0) {
+										showMessage({
+											message: "Nothing to add to cart!",
+											type: "warning",
+										});
+									} else {
+										showMessage({
+											message: "Not enough products!",
+											type: "danger",
+										});
+									}
+								}
+							} else if (selectedSize == "Large") {
+								if (availableQuantityLarge > 0 && count > 0) {
+									props.getOrderedProduct(
+										props.name,
+										count,
+										props.category === "Food" ? props.sellingPrice : itemPrice,
+										props.vat,
+										props.imageURI,
+										selectedSize
+									);
+
+									showMessage({
+										message: `Sucessfully added ${count} ${selectedSize} ${props.name}`,
+										type: "success",
+									});
+
+									setCount(0);
+									SetSelectedSize("");
+									CalculateQuantityFood();
+								} else {
+									if (availableQuantityLarge > 0 && count <= 0) {
+										showMessage({
+											message: "Nothing to add to cart!",
+											type: "warning",
+										});
+									} else {
+										showMessage({
+											message: "Not enough products!",
+											type: "danger",
+										});
+									}
+								}
+							}
 						}
 					}}
 				>

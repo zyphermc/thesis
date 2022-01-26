@@ -77,6 +77,10 @@ function ViewProductModal(props) {
 		};
 	}, []);
 
+	const Capitalize = (str) => {
+		return str.charAt(0).toUpperCase() + str.slice(1);
+	};
+
 	const AddToFirestore = async (data) => {
 		if (productData.product_category === "Food") {
 			await updateDoc(
@@ -85,7 +89,6 @@ function ViewProductModal(props) {
 					product_name: data.name,
 					product_category: data.category,
 					product_description: data.description,
-					product_quantity: parseInt(data.quantity),
 					product_sellingPrice: data.price,
 					product_vatPercent: parseInt(data.vatPercent),
 					product_imageURI: data.imageURI,
@@ -100,7 +103,6 @@ function ViewProductModal(props) {
 					product_name: data.name,
 					product_category: data.category,
 					product_description: data.description,
-					product_quantity: parseInt(data.quantity),
 					selling_prices: data.selling_prices,
 					product_vatPercent: parseInt(data.vatPercent),
 					product_imageURI: data.imageURI,
@@ -139,7 +141,7 @@ function ViewProductModal(props) {
 					name: productData.product_name,
 					description: productData.product_description,
 					category: productData.product_category,
-					quantity: productData.product_quantity,
+					quantities: productData.product_quantities,
 					selling_prices: productData.selling_prices,
 					vatPercent: productData.product_vatPercent,
 					imageURI: productData.product_imageURI,
@@ -191,13 +193,42 @@ function ViewProductModal(props) {
 								</View>
 								<View style={styles.infoContainer}>
 									<Text style={styles.infoText}>Quantity: </Text>
-									<TextInput
-										style={styles.input}
-										placeholder="Product Quantity"
-										onChangeText={props.handleChange("quantity")}
-										defaultValue={productData.product_quantity.toString()}
-										editable={isEditable}
-									/>
+									{props.values.category === "Food" ? (
+										<View>
+											<TextInput
+												style={styles.input}
+												placeholder="Product Quantity"
+												defaultValue={productData.product_quantity.toString()}
+												editable={false}
+											/>
+										</View>
+									) : (
+										<View style={{ flex: 1 }}>
+											{props.values.quantities.map(
+												(quantity, quantityIndex) => {
+													return (
+														<View
+															style={{
+																flexDirection: "row",
+																justifyContent: "space-between",
+															}}
+															key={quantityIndex}
+														>
+															<Text style={{ fontSize: 20 }}>
+																{Capitalize(quantity.size)}
+															</Text>
+															<TextInput
+																style={{ fontSize: 20 }}
+																placeholder="Product Quantity"
+																defaultValue={quantity.quantity.toString()}
+																editable={false}
+															/>
+														</View>
+													);
+												}
+											)}
+										</View>
+									)}
 								</View>
 								<View
 									style={{

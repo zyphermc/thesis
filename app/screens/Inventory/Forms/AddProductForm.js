@@ -11,6 +11,7 @@ import {
 import { Formik } from "formik";
 import { doc, collection, getDocs, setDoc } from "firebase/firestore";
 import { db } from "../../../../firebase-config";
+import { showMessage } from "react-native-flash-message";
 
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -83,7 +84,6 @@ function AddProductForm(props) {
 		name: "",
 		category: "",
 		description: "",
-		quantity: "", //to be removed, going to be automatically calculated based on recipe
 		price: "",
 		selling_prices: sellingPricesTemplate,
 		vatPercent: "",
@@ -104,22 +104,27 @@ function AddProductForm(props) {
 
 	const AddToFirestore = async (data) => {
 		let history = [];
+		let log = {};
 
-		let log = {
+		log = {
 			type: "",
 			name: "",
-			amount: "",
 			date: "",
 			totalValue: "",
 		};
 
 		log.type = "Initialized";
 		log.name = data.name;
-		log.amount = parseInt(data.quantity);
 		log.date = currentDate;
 		log.totalValue = "n/a";
 
 		history.push(log);
+
+		let drinkQuantityTemplate = [
+			{ size: "small", quantity: 0 },
+			{ size: "medium", quantity: 0 },
+			{ size: "large", quantity: 0 },
+		];
 
 		if (currentCategory === "Food") {
 			await setDoc(
@@ -144,7 +149,7 @@ function AddProductForm(props) {
 					product_name: data.name,
 					product_category: data.category,
 					product_description: data.description,
-					product_quantity: parseInt(data.quantity),
+					product_quantities: drinkQuantityTemplate,
 					selling_prices: data.selling_prices,
 					product_vatPercent: parseInt(data.vatPercent),
 					product_imageURI: data.imageURI,
@@ -154,6 +159,11 @@ function AddProductForm(props) {
 				{ merge: true }
 			);
 		}
+
+		showMessage({
+			message: `Successfully added ${data.name}`,
+			type: "success",
+		});
 	};
 
 	return (
@@ -216,13 +226,6 @@ function AddProductForm(props) {
 								placeholder="Description"
 								onChangeText={props.handleChange("description")}
 								value={props.values.description}
-							/>
-							<TextInput
-								style={styles.input}
-								placeholder="Quantity"
-								onChangeText={props.handleChange("quantity")}
-								value={props.values.quantity}
-								keyboardType="numeric"
 							/>
 							{currentCategory === "Food" ? (
 								<TextInput

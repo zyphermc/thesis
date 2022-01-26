@@ -204,10 +204,14 @@ function Cart(props) {
 		});
 	};
 
-	const RemoveProductFromList = (name) => {
+	const RemoveProductFromList = (name, size) => {
 		if (orderProductList.length > 0) {
 			let productIndex = orderProductList.findIndex((item) => {
-				return item.productName == name;
+				if (size === "") {
+					return item.productName == name;
+				} else {
+					return item.productName == name && item.size == size;
+				}
 			});
 
 			if (productIndex >= 0) {
@@ -216,13 +220,6 @@ function Cart(props) {
 					tempList[productIndex].quantity--;
 					SetOrderProductList(tempList);
 					getTotalValue();
-
-					if (orderProductList[productIndex].quantity <= 0) {
-						const filteredList = orderProductList.filter((item) => {
-							return item.productName != name;
-						});
-						//SetOrderProductList(filteredList);
-					}
 				}
 			}
 		}

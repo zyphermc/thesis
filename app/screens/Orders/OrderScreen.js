@@ -20,6 +20,8 @@ import {
 	updateDoc,
 } from "firebase/firestore";
 
+import { showMessage } from "react-native-flash-message";
+
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
 
@@ -134,6 +136,10 @@ function OrderScreen({ route }) {
 
 	const ClearCart = () => {
 		orderProductList = [];
+		showMessage({
+			message: "Cart cleared successfully!",
+			type: "success",
+		});
 	};
 
 	function ShowProductsComponent() {
@@ -156,6 +162,7 @@ function OrderScreen({ route }) {
 							name={item.product_name}
 							category={item.product_category}
 							quantity={item.product_quantity}
+							quantities={item.product_quantities}
 							sellingPrice={item.product_sellingPrice}
 							selling_prices={item.selling_prices}
 							imageURI={item.product_imageURI}
