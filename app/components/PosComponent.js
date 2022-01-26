@@ -45,7 +45,7 @@ function PosComponent(props) {
 		}
 	};
 
-	//Calculates how many orders the user can make based on recipe [Drinks]
+	//Calculates how many orders the user can make based on recipe [Drinks]//
 	const CalculateQuantityDrink = () => {
 		SetAvailableQuantitySmall(props.quantities[0].quantity);
 		SetAvailableQuantityMedium(props.quantities[1].quantity);
