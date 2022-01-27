@@ -155,7 +155,6 @@ function ViewIngredientModal(props) {
 						<Formik
 							initialValues={initialValues}
 							onSubmit={(values) => {
-								console.log(values);
 								AddToFirestore(values);
 							}}
 						>

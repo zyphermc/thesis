@@ -100,7 +100,6 @@ function AddIngredientForm(props) {
 			<Formik
 				initialValues={initialValues}
 				onSubmit={(values, { resetForm }) => {
-					console.log(values);
 					AddToFirestore(values);
 					resetForm({ values: initialValues });
 				}}

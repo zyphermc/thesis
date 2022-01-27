@@ -154,7 +154,6 @@ function ViewProductModal(props) {
 					<Formik
 						initialValues={initialValues}
 						onSubmit={(values) => {
-							console.log(values);
 							AddToFirestore(values);
 							SetIsEditable(false);
 						}}

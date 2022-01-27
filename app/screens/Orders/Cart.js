@@ -326,7 +326,6 @@ function Cart(props) {
 								} else {
 									Alert.alert("No products in cart!");
 								}
-								console.log(orderProductList);
 							}
 						}}
 					>
