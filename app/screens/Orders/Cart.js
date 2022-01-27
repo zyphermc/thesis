@@ -7,7 +7,9 @@ import {
 	StyleSheet,
 	TextInput,
 	Alert,
+	LogBox,
 } from "react-native";
+
 import { useNavigation } from "@react-navigation/native";
 
 //Database
@@ -22,6 +24,10 @@ import {
 import { db } from "../../../firebase-config";
 
 import CartComponent from "../../components/CartComponent";
+
+LogBox.ignoreLogs([
+	"Non-serializable values were found in the navigation state",
+]);
 
 function Cart(props) {
 	const [orderProductList, SetOrderProductList] = useState(

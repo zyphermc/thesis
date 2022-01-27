@@ -14,6 +14,7 @@ function HomeScreen(props) {
 	// Calculate Max Quantities of Products here so that it is the first thing
 	// the app does.
 	const CalculateProductMaxQuantity = async (name) => {
+		console.log("Initialized Product Quantities - Home");
 		if (products.length > 0 && ingredients.length > 0) {
 			const product = products.find((item) => {
 				return item.product_name === name;

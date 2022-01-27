@@ -21,35 +21,73 @@ function PosComponent(props) {
 
 	let selectedSizeFast = "";
 
-	//Calculates how many orders the user can make based on recipe [Food]
-	const CalculateQuantityFood = () => {
-		let orderList = props.GetOrderProductList();
+	const CalculateProductMaxQuantity = () => {
+		console.log("PosComponent - Calculated");
 
-		if (orderList.length > 0) {
-			//Find item in order list
-			const order = orderList.find((item) => {
-				if (item.size == "") {
-					return item.productName == props.name;
-				} else {
-					return item.productName == props.name && item.size == selectedSize;
-				}
-			});
+		props.deductItemsLocally(
+			props.name,
+			props.category,
+			props.recipe,
+			count,
+			selectedSize
+		);
 
-			//If order is not empty
-			if (typeof order != "undefined") {
-				const tempQuantity = props.quantity - order.quantity;
-				SetAvailableQuantity(tempQuantity);
+		if (props.ingredients.length > 0) {
+			if (props.category == "Food") {
+				let product_quantities = [];
+				let availableQuantity = 0;
+
+				props.recipe.map((ingredient) => {
+					const dbIngredient = props.ingredients.find((item) => {
+						return item.ingredient_name === ingredient.name;
+					});
+
+					let tempQuantity = Math.floor(
+						dbIngredient.ingredient_stock / ingredient.amount
+					);
+
+					product_quantities.push(tempQuantity);
+				});
+
+				availableQuantity = Math.min(...product_quantities);
+
+				SetAvailableQuantity(availableQuantity);
+			} else {
+				let availableQuantities = [];
+
+				props.quantities.map(async (quantity) => {
+					let product_quantities = [];
+
+					let availableQuantity = 0;
+
+					//Get recipe according to size
+					const myRecipe = props.recipe.find((item) => {
+						return item.size === quantity.size;
+					});
+
+					//Iterate through each ingredient and get the max order quantity
+					myRecipe.ingredients.map((ingredient) => {
+						const dbIngredient = props.ingredients.find((item) => {
+							return item.ingredient_name === ingredient.name;
+						});
+
+						let tempQuantity = Math.floor(
+							dbIngredient.ingredient_stock / ingredient.amount
+						);
+
+						product_quantities.push(tempQuantity);
+					});
+
+					availableQuantity = Math.min(...product_quantities);
+
+					availableQuantities.push(availableQuantity);
+				});
+
+				SetAvailableQuantitySmall(availableQuantities[0]);
+				SetAvailableQuantityMedium(availableQuantities[1]);
+				SetAvailableQuantityLarge(availableQuantities[2]);
 			}
-		} else {
-			SetAvailableQuantity(props.quantity);
 		}
-	};
-
-	//Calculates how many orders the user can make based on recipe [Drinks]
-	const CalculateQuantityDrink = () => {
-		SetAvailableQuantitySmall(props.quantities[0].quantity);
-		SetAvailableQuantityMedium(props.quantities[1].quantity);
-		SetAvailableQuantityLarge(props.quantities[2].quantity);
 	};
 
 	const GetItemPrice = () => {
@@ -64,11 +102,7 @@ function PosComponent(props) {
 
 	useFocusEffect(
 		React.useCallback(() => {
-			if (props.category == "Food") {
-				CalculateQuantityFood();
-			} else {
-				CalculateQuantityDrink();
-			}
+			CalculateProductMaxQuantity();
 		}, [])
 	);
 
@@ -300,8 +334,8 @@ function PosComponent(props) {
 									type: "success",
 								});
 
+								CalculateProductMaxQuantity();
 								setCount(0);
-								CalculateQuantityFood();
 							} else {
 								if (availableQuantity > 0 && count <= 0) {
 									showMessage({
@@ -332,9 +366,9 @@ function PosComponent(props) {
 										type: "success",
 									});
 
+									CalculateProductMaxQuantity();
 									setCount(0);
 									SetSelectedSize("");
-									CalculateQuantityFood();
 								} else {
 									if (availableQuantitySmall > 0 && count <= 0) {
 										showMessage({
@@ -364,9 +398,9 @@ function PosComponent(props) {
 										type: "success",
 									});
 
+									CalculateProductMaxQuantity();
 									setCount(0);
 									SetSelectedSize("");
-									CalculateQuantityFood();
 								} else {
 									if (availableQuantityMedium > 0 && count <= 0) {
 										showMessage({
@@ -396,9 +430,9 @@ function PosComponent(props) {
 										type: "success",
 									});
 
+									CalculateProductMaxQuantity();
 									setCount(0);
 									SetSelectedSize("");
-									CalculateQuantityFood();
 								} else {
 									if (availableQuantityLarge > 0 && count <= 0) {
 										showMessage({

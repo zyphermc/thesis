@@ -43,74 +43,91 @@ function OrderScreen({ route }) {
 
 	const navigation = useNavigation();
 
-	const CalculateProductMaxQuantity = async (name) => {
-		if (products.length > 0 && ingredients.length > 0) {
-			const product = products.find((item) => {
-				return item.product_name === name;
-			});
+	const deductItemsLocally = (name, category, recipe, orderQuantity, size) => {
+		if (typeof name != "undefined" && typeof orderQuantity != "undefined") {
+			//Check if product is not drink (to not use size)
+			if (category != "Drinks") {
+				//On each ingredient in the recipe, do stuff
+				recipe.map(async (ingredient) => {
+					const myIngredients = ingredients;
 
-			if (product.product_category == "Food") {
-				let product_quantities = [];
-				let availableQuantity = 0;
-
-				product.recipe.map((ingredient) => {
-					const dbIngredient = ingredients.find((item) => {
+					const myIngredient = myIngredients.find((item) => {
 						return item.ingredient_name === ingredient.name;
 					});
 
-					let tempQuantity = Math.floor(
-						dbIngredient.ingredient_stock / ingredient.amount
-					);
+					//deduct the amount
+					myIngredient.ingredient_stock -= orderQuantity * ingredient.amount;
 
-					product_quantities.push(tempQuantity);
+					SetIngredients(myIngredients);
 				});
-
-				availableQuantity = Math.min(...product_quantities);
-
-				try {
-					await updateDoc(doc(db, "products", product.product_name), {
-						product_quantity: availableQuantity,
-					});
-				} catch (err) {
-					console.log(err);
-				}
 			} else {
-				let availableQuantities = product.product_quantities;
+				if (size != "") {
+					recipe.map((recipe) => {
+						if (size.toLowerCase() === recipe.size) {
+							recipe.ingredients.map(async (ingredient) => {
+								const myIngredients = ingredients;
 
-				product.product_quantities.map(async (quantity, index) => {
-					let product_quantities = [];
+								const myIngredient = ingredients.find((item) => {
+									return item.ingredient_name === ingredient.name;
+								});
 
-					let availableQuantity = 0;
+								//deduct the amount
+								myIngredient.ingredient_stock -=
+									orderQuantity * ingredient.amount;
 
-					//Get recipe according to size
-					const myRecipe = product.recipe.find((item) => {
-						return item.size === quantity.size;
+								SetIngredients(myIngredients);
+							});
+						}
+					});
+				}
+			}
+		}
+	};
+
+	const addItemsLocally = (name, orderQuantity, size) => {
+		console.log("ITEMS ADDED");
+		if (typeof name != "undefined" && typeof orderQuantity != "undefined") {
+			let category = products.find((item) => {
+				return item.name == name;
+			}).product_category;
+			let recipe = products.find((item) => {
+				return item.name == name;
+			}).recipe;
+
+			//Check if product is not drink (to not use size)
+			if (category != "Drinks") {
+				//On each ingredient in the recipe, do stuff
+				recipe.map(async (ingredient) => {
+					const myIngredients = ingredients;
+
+					const myIngredient = myIngredients.find((item) => {
+						return item.ingredient_name === ingredient.name;
 					});
 
-					//Iterate through each ingredient and get the max order quantity
-					myRecipe.ingredients.map((ingredient) => {
-						const dbIngredient = ingredients.find((item) => {
-							return item.ingredient_name === ingredient.name;
-						});
+					//add the amount
+					myIngredient.ingredient_stock += orderQuantity * ingredient.amount;
 
-						let tempQuantity = Math.floor(
-							dbIngredient.ingredient_stock / ingredient.amount
-						);
-
-						product_quantities.push(tempQuantity);
-					});
-
-					availableQuantity = Math.min(...product_quantities);
-
-					availableQuantities[index].quantity = availableQuantity;
+					SetIngredients(myIngredients);
 				});
+			} else {
+				if (typeof size != "undefined") {
+					recipe.map((recipe) => {
+						if (size.toLowerCase() === recipe.size) {
+							recipe.ingredients.map(async (ingredient) => {
+								const myIngredients = ingredients;
 
-				try {
-					await updateDoc(doc(db, "products", product.product_name), {
-						product_quantities: availableQuantities,
+								const myIngredient = ingredients.find((item) => {
+									return item.ingredient_name === ingredient.name;
+								});
+
+								//add the amount
+								myIngredient.ingredient_stock +=
+									orderQuantity * ingredient.amount;
+
+								SetIngredients(myIngredients);
+							});
+						}
 					});
-				} catch (err) {
-					console.log(err);
 				}
 			}
 		}
@@ -259,6 +276,7 @@ function OrderScreen({ route }) {
 						<PosComponent
 							name={item.product_name}
 							category={item.product_category}
+							recipe={item.recipe}
 							quantity={item.product_quantity}
 							quantities={item.product_quantities}
 							sellingPrice={item.product_sellingPrice}
@@ -267,7 +285,8 @@ function OrderScreen({ route }) {
 							getOrderedProduct={getOrderedProduct}
 							vat={item.product_vatPercent}
 							GetOrderProductList={GetOrderProductList}
-							CalculateProductMaxQuantity={CalculateProductMaxQuantity}
+							ingredients={ingredients}
+							deductItemsLocally={deductItemsLocally}
 						/>
 					)}
 				/>
@@ -301,6 +320,7 @@ function OrderScreen({ route }) {
 								navigation.navigate("Tab", {
 									products: products,
 									orderProductList: orderProductList,
+									addItemsLocally: addItemsLocally,
 								});
 							}}
 						>
