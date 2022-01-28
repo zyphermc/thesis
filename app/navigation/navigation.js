@@ -105,7 +105,7 @@ function DrawerNavigation(props) {
 const Tab = createMaterialTopTabNavigator();
 
 function TabNavigation(props) {
-	const { products, orderProductList } = props.route.params;
+	const { products, orderProductList, ingredients } = props.route.params;
 	return (
 		<Tab.Navigator
 			initialRouteName="Cart"
@@ -121,6 +121,7 @@ function TabNavigation(props) {
 				initialParams={{
 					products: products,
 					orderProductList: orderProductList,
+					ingredients: ingredients,
 				}}
 				options={{ tabBarLabel: "Cart", title: "Cart" }}
 			/>

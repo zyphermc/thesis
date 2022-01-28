@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
 	Text,
 	View,
@@ -7,6 +7,7 @@ import {
 	TouchableOpacity,
 	Button,
 	Alert,
+	DeviceEventEmitter,
 } from "react-native";
 import { showMessage } from "react-native-flash-message";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -14,6 +15,13 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 function CartComponent(props) {
 	const { name, imageURI, sellingPrice, size } = props;
 	const [quantity, SetQuantity] = useState(props.quantity);
+
+	useEffect(() => {
+		return () => {
+			//DeviceEventEmitter.removeAllListeners("addItemsLocally");
+		};
+	}, []);
+
 	return (
 		<View>
 			{quantity > 0 ? (
@@ -54,9 +62,12 @@ function CartComponent(props) {
 						<TouchableOpacity
 							onPress={() => {
 								props.RemoveProductFromList(name, size);
+
 								if (quantity > 0) {
 									let tempQty = quantity;
 									SetQuantity(--tempQty);
+									let data = [name, 1, size];
+									DeviceEventEmitter.emit("addItemsLocally", { data });
 
 									if (size != "") {
 										showMessage({

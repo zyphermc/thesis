@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import {
 	Text,
 	StyleSheet,
@@ -10,6 +10,7 @@ import {
 	Modal,
 	ActivityIndicator,
 	ImageBackground,
+	DeviceEventEmitter,
 } from "react-native";
 
 import {
@@ -43,10 +44,14 @@ function OrderScreen({ route }) {
 
 	const navigation = useNavigation();
 
+	let persistentProducts = [];
+	let persistentIngredients = [];
+
 	const deductItemsLocally = (name, category, recipe, orderQuantity, size) => {
 		if (typeof name != "undefined" && typeof orderQuantity != "undefined") {
 			//Check if product is not drink (to not use size)
 			if (category != "Drinks") {
+				console.log("I DEDUCTED FOOD");
 				//On each ingredient in the recipe, do stuff
 				recipe.map(async (ingredient) => {
 					const myIngredients = ingredients;
@@ -62,6 +67,7 @@ function OrderScreen({ route }) {
 				});
 			} else {
 				if (size != "") {
+					console.log("I DEDUCTED DRINK");
 					recipe.map((recipe) => {
 						if (size.toLowerCase() === recipe.size) {
 							recipe.ingredients.map(async (ingredient) => {
@@ -84,21 +90,29 @@ function OrderScreen({ route }) {
 		}
 	};
 
-	const addItemsLocally = (name, orderQuantity, size) => {
-		console.log("ITEMS ADDED");
-		if (typeof name != "undefined" && typeof orderQuantity != "undefined") {
-			let category = products.find((item) => {
-				return item.name == name;
+	const addItemsLocally = (data) => {
+		let name = data.data[0];
+		let orderQuantity = data.data[1];
+		let size = data.data[2];
+
+		if (
+			typeof name != "undefined" &&
+			typeof orderQuantity != "undefined" &&
+			persistentProducts.length > 0
+		) {
+			let category = persistentProducts.find((item) => {
+				return item.product_name == name;
 			}).product_category;
-			let recipe = products.find((item) => {
-				return item.name == name;
+			let recipe = persistentProducts.find((item) => {
+				return item.product_name == name;
 			}).recipe;
 
 			//Check if product is not drink (to not use size)
 			if (category != "Drinks") {
+				console.log("I RAN FOOD");
 				//On each ingredient in the recipe, do stuff
 				recipe.map(async (ingredient) => {
-					const myIngredients = ingredients;
+					const myIngredients = persistentIngredients;
 
 					const myIngredient = myIngredients.find((item) => {
 						return item.ingredient_name === ingredient.name;
@@ -110,13 +124,14 @@ function OrderScreen({ route }) {
 					SetIngredients(myIngredients);
 				});
 			} else {
-				if (typeof size != "undefined") {
+				if (typeof size != "undefined" && persistentProducts.length > 0) {
+					console.log("I RAN DRINKS");
 					recipe.map((recipe) => {
 						if (size.toLowerCase() === recipe.size) {
 							recipe.ingredients.map(async (ingredient) => {
-								const myIngredients = ingredients;
+								const myIngredients = persistentIngredients;
 
-								const myIngredient = ingredients.find((item) => {
+								const myIngredient = persistentIngredients.find((item) => {
 									return item.ingredient_name === ingredient.name;
 								});
 
@@ -133,9 +148,17 @@ function OrderScreen({ route }) {
 		}
 	};
 
+	const deployListener = () => {
+		DeviceEventEmitter.addListener("addItemsLocally", (data) =>
+			addItemsLocally(data)
+		);
+	};
+
 	useEffect(() => {
 		let isMounted = true;
 		SetIsLoading(true);
+
+		deployListener();
 
 		//Get Ingredients from Firestore
 		const getIngredients = async () => {
@@ -154,6 +177,7 @@ function OrderScreen({ route }) {
 
 				if (isMounted) {
 					//Update Ingredient State with latest data
+					persistentIngredients = myIngredients;
 					SetIngredients(myIngredients);
 				}
 			});
@@ -177,6 +201,7 @@ function OrderScreen({ route }) {
 				});
 
 				if (isMounted) {
+					persistentProducts = myProducts;
 					SetProducts(myProducts);
 					SetFilteredProducts(myProducts);
 				}
@@ -319,8 +344,8 @@ function OrderScreen({ route }) {
 							onPress={() => {
 								navigation.navigate("Tab", {
 									products: products,
+									ingredients: ingredients,
 									orderProductList: orderProductList,
-									addItemsLocally: addItemsLocally,
 								});
 							}}
 						>

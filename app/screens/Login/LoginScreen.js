@@ -11,7 +11,7 @@ import {
 } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
-
+import { showMessage } from "react-native-flash-message";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { doc, updateDoc } from "firebase/firestore";
 
@@ -31,10 +31,17 @@ function LoginScreen() {
 
 				UpdateSignIn(true);
 				setIsSignedIn(true);
+				showMessage({
+					message: "Successfully logged in!",
+					type: "success",
+				});
 			})
 			.catch((err) => {
 				console.log(err);
-				console.warn("Wrong account details!");
+				showMessage({
+					message: "Wrong account details!",
+					type: "danger",
+				});
 			});
 
 		//Check if email is admin

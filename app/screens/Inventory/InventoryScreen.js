@@ -11,7 +11,7 @@ import {
 	ImageBackground,
 	Alert,
 } from "react-native";
-
+import { useFocusEffect } from "@react-navigation/native";
 import {
 	collection,
 	doc,
@@ -57,6 +57,9 @@ function InventoryScreen({ route }) {
 	//Ingredients and Products Firebase reference
 	const ingredientsCollectionRef = collection(db, "ingredients");
 	const productsCollectionRef = collection(db, "products");
+
+	let ingredientsFast = [];
+	let productsFast = [];
 
 	useEffect(() => {
 		let isMounted = true;
@@ -113,11 +116,6 @@ function InventoryScreen({ route }) {
 						} catch (err) {
 							console.log(err);
 						}
-
-						console.log(
-							"Added or Modified: ",
-							change.doc.data().ingredient_name
-						);
 					}
 				});
 
@@ -127,6 +125,7 @@ function InventoryScreen({ route }) {
 
 				if (isMounted) {
 					//Update Ingredient State with latest data
+					ingredientsFast = myIngredients;
 					SetIngredients(myIngredients);
 					SetFilteredIngredients(myIngredients);
 				}
@@ -154,6 +153,7 @@ function InventoryScreen({ route }) {
 				if (isMounted) {
 					SetProducts(myProducts);
 					SetFilteredProducts(myProducts);
+					productsFast = myProducts;
 				}
 			});
 		};
@@ -165,6 +165,85 @@ function InventoryScreen({ route }) {
 			isMounted = false;
 		};
 	}, []);
+
+	useFocusEffect(
+		React.useCallback(() => {
+			if (productsFast.length > 0) {
+				productsFast.map((item) => {
+					CalculateProductMaxQuantity(item);
+				});
+			}
+		}, [])
+	);
+
+	const CalculateProductMaxQuantity = async (data) => {
+		if (ingredientsFast.length > 0) {
+			if (data.product_category == "Food") {
+				let product_quantities = [];
+				let availableQuantity = 0;
+
+				data.recipe.map((ingredient) => {
+					const dbIngredient = ingredientsFast.find((item) => {
+						return item.ingredient_name === ingredient.name;
+					});
+
+					let tempQuantity = Math.floor(
+						dbIngredient.ingredient_stock / ingredient.amount
+					);
+
+					product_quantities.push(tempQuantity);
+				});
+
+				availableQuantity = Math.min(...product_quantities);
+
+				try {
+					await updateDoc(doc(db, "products", data.product_name), {
+						product_quantity: availableQuantity,
+					});
+				} catch (err) {
+					console.log(err);
+				}
+			} else {
+				let availableQuantities = data.product_quantities;
+
+				data.product_quantities.map(async (quantity, index) => {
+					let product_quantities = [];
+
+					let availableQuantity = 0;
+
+					//Get recipe according to size
+					const myRecipe = data.recipe.find((item) => {
+						return item.size === quantity.size;
+					});
+
+					//Iterate through each ingredient and get the max order quantity
+					myRecipe.ingredients.map((ingredient) => {
+						const dbIngredient = ingredientsFast.find((item) => {
+							return item.ingredient_name === ingredient.name;
+						});
+
+						let tempQuantity = Math.floor(
+							dbIngredient.ingredient_stock / ingredient.amount
+						);
+
+						product_quantities.push(tempQuantity);
+					});
+
+					availableQuantity = Math.min(...product_quantities);
+
+					availableQuantities[index].quantity = availableQuantity;
+				});
+
+				try {
+					await updateDoc(doc(db, "products", data.product_name), {
+						product_quantities: availableQuantities,
+					});
+				} catch (err) {
+					console.log(err);
+				}
+			}
+		}
+	};
 
 	const handleButtonView = (itemName) => {
 		//show detailed view about product

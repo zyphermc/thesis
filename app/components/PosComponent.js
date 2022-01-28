@@ -1,36 +1,71 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { showMessage } from "react-native-flash-message";
+import { db } from "../../firebase-config";
+import {
+	collection,
+	onSnapshot,
+	updateDoc,
+	increment,
+	doc,
+} from "firebase/firestore";
 
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 function PosComponent(props) {
 	const [count, setCount] = useState(0);
+	const updaterCollectionRef = collection(db, "updater");
 	const onPressAdd = () => setCount((prevCount) => prevCount + 1);
 	const onPressMinus = () => setCount((prevCount) => prevCount - 1, 0);
 	const [itemPrice, SetItemPrice] = useState(0);
 	const [selectedSize, SetSelectedSize] = useState("");
-	const [availableQuantity, SetAvailableQuantity] = useState(0);
+
+	const [availableQuantity, SetAvailableQuantity] = useState(-1);
 
 	//Drink quantities
-	const [availableQuantitySmall, SetAvailableQuantitySmall] = useState(0);
-	const [availableQuantityMedium, SetAvailableQuantityMedium] = useState(0);
-	const [availableQuantityLarge, SetAvailableQuantityLarge] = useState(0);
+	const [availableQuantitySmall, SetAvailableQuantitySmall] = useState(-1);
+	const [availableQuantityMedium, SetAvailableQuantityMedium] = useState(-1);
+	const [availableQuantityLarge, SetAvailableQuantityLarge] = useState(-1);
+
+	//Updater Count
+	const [updaterCount, SetUpdaterCount] = useState(0);
 
 	let selectedSizeFast = "";
 
-	const CalculateProductMaxQuantity = () => {
-		console.log("PosComponent - Calculated");
+	let availableQuantityFast = 0;
+	let availableQuantitySmallFast = 0;
+	let availableQuantityMediumFast = 0;
+	let availableQuantityLargeFast = 0;
 
-		props.deductItemsLocally(
-			props.name,
-			props.category,
-			props.recipe,
-			count,
-			selectedSize
-		);
+	if (props.category == "Food") {
+		availableQuantityFast = props.quantity;
+	} else {
+		availableQuantitySmallFast = props.quantities[0].quantity;
+		availableQuantityMediumFast = props.quantities[1].quantity;
+		availableQuantityLargeFast = props.quantities[2].quantity;
+	}
+
+	const updateUpdater = async () => {
+		await updateDoc(doc(db, "updater", "update"), {
+			count: increment(1),
+		});
+
+		let tempCount = updaterCount;
+		SetUpdaterCount(++tempCount);
+	};
+
+	const CalculateProductMaxQuantity = async () => {
+		if (count > 0) {
+			props.deductItemsLocally(
+				props.name,
+				props.category,
+				props.recipe,
+				count,
+				selectedSize
+			);
+		}
 
 		if (props.ingredients.length > 0) {
 			if (props.category == "Food") {
@@ -51,7 +86,13 @@ function PosComponent(props) {
 
 				availableQuantity = Math.min(...product_quantities);
 
-				SetAvailableQuantity(availableQuantity);
+				if (availableQuantity >= 0) {
+					SetAvailableQuantity(availableQuantity);
+					availableQuantityFast = availableQuantity;
+				} else {
+					SetAvailableQuantity(0);
+					availableQuantityFast = 0;
+				}
 			} else {
 				let availableQuantities = [];
 
@@ -80,12 +121,19 @@ function PosComponent(props) {
 
 					availableQuantity = Math.min(...product_quantities);
 
-					availableQuantities.push(availableQuantity);
+					if (availableQuantity > 0) {
+						availableQuantities.push(availableQuantity);
+					} else {
+						availableQuantities.push(0);
+					}
 				});
 
 				SetAvailableQuantitySmall(availableQuantities[0]);
 				SetAvailableQuantityMedium(availableQuantities[1]);
 				SetAvailableQuantityLarge(availableQuantities[2]);
+				availableQuantitySmallFast = availableQuantities[0];
+				availableQuantityMediumFast = availableQuantities[1];
+				availableQuantityLargeFast = availableQuantities[2];
 			}
 		}
 	};
@@ -106,6 +154,21 @@ function PosComponent(props) {
 		}, [])
 	);
 
+	useEffect(() => {
+		//Get Updater from Firestore
+		const getUpdater = async () => {
+			const unsub = onSnapshot(updaterCollectionRef, (docsSnapshot) => {
+				docsSnapshot.docChanges().forEach(async (change) => {
+					if (change.type === "added" || change.type === "modified") {
+						CalculateProductMaxQuantity();
+					}
+				});
+			});
+		};
+
+		getUpdater();
+	}, []);
+
 	return (
 		<View style={styles.container}>
 			<Image
@@ -120,28 +183,54 @@ function PosComponent(props) {
 			<View style={styles.textContainer}>
 				<Text style={styles.textStyle}>
 					Name:{" "}
-					<Text
-						style={{
-							textDecorationLine: props.quantity <= 0 ? "line-through" : null,
-						}}
-					>
-						{props.name}
-					</Text>
+					{props.category == "Food" ? (
+						<Text
+							style={{
+								textDecorationLine:
+									availableQuantityFast <= 0 ? "line-through" : null,
+							}}
+						>
+							{props.name}
+						</Text>
+					) : (
+						<Text
+							style={{
+								textDecorationLine:
+									availableQuantitySmallFast <= 0 ? "line-through" : null,
+							}}
+						>
+							{props.name}
+						</Text>
+					)}
 				</Text>
 				<Text style={styles.textStyle}>Category: {props.category}</Text>
 				{props.category == "Food" ? (
-					<Text style={styles.textStyle}>Quantity: {availableQuantity}</Text>
+					<Text style={styles.textStyle}>
+						Quantity:{" "}
+						{availableQuantity != -1
+							? availableQuantity
+							: availableQuantityFast}
+					</Text>
 				) : (
 					<View>
 						<Text style={styles.textStyle}>Quantity: </Text>
 						<Text style={styles.textStyle}>
-							Small - {availableQuantitySmall}
+							Small -{" "}
+							{availableQuantitySmall != -1
+								? availableQuantitySmall
+								: availableQuantitySmallFast}
 						</Text>
 						<Text style={styles.textStyle}>
-							Medium - {availableQuantityMedium}
+							Medium -{" "}
+							{availableQuantityMedium != -1
+								? availableQuantityMedium
+								: availableQuantityMediumFast}
 						</Text>
 						<Text style={styles.textStyle}>
-							Large - {availableQuantityLarge}
+							Large -{" "}
+							{availableQuantityLarge != -1
+								? availableQuantityLarge
+								: availableQuantityLargeFast}
 						</Text>
 					</View>
 				)}
@@ -153,19 +242,19 @@ function PosComponent(props) {
 					<Text
 						style={[
 							styles.textStyle,
-							{ color: availableQuantity > 0 ? "green" : "red" },
+							{ color: availableQuantityFast > 0 ? "green" : "red" },
 						]}
 					>
-						{availableQuantity > 0 ? "Available" : "Not Available"}
+						{availableQuantityFast > 0 ? "Available" : "Not Available"}
 					</Text>
 				) : (
 					<Text
 						style={[
 							styles.textStyle,
-							{ color: availableQuantitySmall > 0 ? "green" : "red" },
+							{ color: availableQuantitySmallFast > 0 ? "green" : "red" },
 						]}
 					>
-						{availableQuantitySmall > 0 ? "Available" : "Not Available"}
+						{availableQuantitySmallFast > 0 ? "Available" : "Not Available"}
 					</Text>
 				)}
 			</View>
@@ -198,7 +287,10 @@ function PosComponent(props) {
 					<TouchableOpacity
 						onPress={() => {
 							if (props.category == "Food") {
-								if (availableQuantity > 0 && count < availableQuantity) {
+								if (
+									availableQuantityFast > 0 &&
+									count < availableQuantityFast
+								) {
 									onPressAdd();
 								} else {
 									showMessage({
@@ -209,8 +301,8 @@ function PosComponent(props) {
 							} else {
 								if (selectedSize == "Small") {
 									if (
-										availableQuantitySmall > 0 &&
-										count < availableQuantitySmall
+										availableQuantitySmallFast > 0 &&
+										count < availableQuantitySmallFast
 									) {
 										onPressAdd();
 									} else {
@@ -221,8 +313,8 @@ function PosComponent(props) {
 									}
 								} else if (selectedSize == "Medium") {
 									if (
-										availableQuantityMedium > 0 &&
-										count < availableQuantityMedium
+										availableQuantityMediumFast > 0 &&
+										count < availableQuantityMediumFast
 									) {
 										onPressAdd();
 									} else {
@@ -233,8 +325,8 @@ function PosComponent(props) {
 									}
 								} else if (selectedSize == "Large") {
 									if (
-										availableQuantityLarge > 0 &&
-										count < availableQuantityLarge
+										availableQuantityLargeFast > 0 &&
+										count < availableQuantityLargeFast
 									) {
 										onPressAdd();
 									} else {
@@ -319,7 +411,7 @@ function PosComponent(props) {
 					style={styles.buttonInside}
 					onPress={() => {
 						if (props.category == "Food") {
-							if (availableQuantity > 0 && count > 0) {
+							if (availableQuantityFast > 0 && count > 0) {
 								props.getOrderedProduct(
 									props.name,
 									count,
@@ -335,9 +427,10 @@ function PosComponent(props) {
 								});
 
 								CalculateProductMaxQuantity();
+								updateUpdater();
 								setCount(0);
 							} else {
-								if (availableQuantity > 0 && count <= 0) {
+								if (availableQuantityFast > 0 && count <= 0) {
 									showMessage({
 										message: "Nothing to add to cart!",
 										type: "warning",
@@ -351,7 +444,7 @@ function PosComponent(props) {
 							}
 						} else {
 							if (selectedSize == "Small") {
-								if (availableQuantitySmall > 0 && count > 0) {
+								if (availableQuantitySmallFast > 0 && count > 0) {
 									props.getOrderedProduct(
 										props.name,
 										count,
@@ -367,10 +460,11 @@ function PosComponent(props) {
 									});
 
 									CalculateProductMaxQuantity();
+									updateUpdater();
 									setCount(0);
 									SetSelectedSize("");
 								} else {
-									if (availableQuantitySmall > 0 && count <= 0) {
+									if (availableQuantitySmallFast > 0 && count <= 0) {
 										showMessage({
 											message: "Nothing to add to cart!",
 											type: "warning",
@@ -383,7 +477,7 @@ function PosComponent(props) {
 									}
 								}
 							} else if (selectedSize == "Medium") {
-								if (availableQuantityMedium > 0 && count > 0) {
+								if (availableQuantityMediumFast > 0 && count > 0) {
 									props.getOrderedProduct(
 										props.name,
 										count,
@@ -399,10 +493,11 @@ function PosComponent(props) {
 									});
 
 									CalculateProductMaxQuantity();
+									updateUpdater();
 									setCount(0);
 									SetSelectedSize("");
 								} else {
-									if (availableQuantityMedium > 0 && count <= 0) {
+									if (availableQuantityMediumFast > 0 && count <= 0) {
 										showMessage({
 											message: "Nothing to add to cart!",
 											type: "warning",
@@ -415,7 +510,7 @@ function PosComponent(props) {
 									}
 								}
 							} else if (selectedSize == "Large") {
-								if (availableQuantityLarge > 0 && count > 0) {
+								if (availableQuantityLargeFast > 0 && count > 0) {
 									props.getOrderedProduct(
 										props.name,
 										count,
@@ -431,10 +526,11 @@ function PosComponent(props) {
 									});
 
 									CalculateProductMaxQuantity();
+									updateUpdater();
 									setCount(0);
 									SetSelectedSize("");
 								} else {
-									if (availableQuantityLarge > 0 && count <= 0) {
+									if (availableQuantityLargeFast > 0 && count <= 0) {
 										showMessage({
 											message: "Nothing to add to cart!",
 											type: "warning",

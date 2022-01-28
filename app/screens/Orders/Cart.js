@@ -29,13 +29,15 @@ LogBox.ignoreLogs([
 	"Non-serializable values were found in the navigation state",
 ]);
 
-function Cart(props) {
+function Cart(props, route) {
 	const [orderProductList, SetOrderProductList] = useState(
 		props.route.params.orderProductList
 	);
-	const [products, SetProducts] = useState([]);
+	const [ingredients, SetIngredients] = useState(
+		props.route.params.ingredients
+	);
+	const [products, SetProducts] = useState(props.route.params.products);
 	const [totalValue, setTotalValue] = useState(0);
-
 	//Database references
 	const productsCollectionRef = collection(db, "products");
 
@@ -68,21 +70,48 @@ function Cart(props) {
 	};
 
 	useEffect(() => {
-		const GetProducts = async () => {
-			const myProducts = [];
-			const querySnapshot = await getDocs(productsCollectionRef);
-
-			querySnapshot.forEach((doc) => {
-				myProducts.push(doc.data());
-			});
-
-			SetProducts(myProducts);
-		};
-
-		GetProducts();
-
 		getTotalValue();
 	}, []);
+
+	const CalculateProductMaxQuantity = (name) => {
+		if (products.length > 0 && ingredients.length > 0) {
+			const product = products.find((item) => {
+				return item.product_name === name;
+			});
+
+			let availableQuantities = product.product_quantities;
+
+			product.product_quantities.map((quantity, index) => {
+				let product_quantities = [];
+
+				let availableQuantity = 0;
+
+				//Get recipe according to size
+				const myRecipe = product.recipe.find((item) => {
+					return item.size === quantity.size;
+				});
+
+				//Iterate through each ingredient and get the max order quantity
+				myRecipe.ingredients.map((ingredient) => {
+					const dbIngredient = ingredients.find((item) => {
+						return item.ingredient_name === ingredient.name;
+					});
+
+					let tempQuantity = Math.floor(
+						dbIngredient.ingredient_stock / ingredient.amount
+					);
+
+					product_quantities.push(tempQuantity);
+				});
+
+				availableQuantity = Math.min(...product_quantities);
+
+				availableQuantities[index].quantity = availableQuantity;
+			});
+
+			return availableQuantities;
+		}
+	};
 
 	const deductItems = async (name, orderQuantity, size, price) => {
 		//note: products should be passed as a parameter or declared to whichever screen
@@ -98,47 +127,45 @@ function Cart(props) {
 
 			//Log each ordered item in products
 			const prodDocRef = doc(db, "products", name);
-			const prodDocSnap = await getDoc(prodDocRef);
 
-			let productHistory = prodDocSnap.data().history;
-
-			let orderLog = {
-				type: "",
-				name: "",
-				amount: "",
-				date: "",
-				totalValue: "",
-			};
-
-			orderLog.type = "Ordered";
-			orderLog.name = name;
-			orderLog.amount = parseInt(orderQuantity);
-			orderLog.date = currentDate;
-			orderLog.totalValue = price * orderQuantity;
-
-			productHistory.push(orderLog);
-
-			//update product history
-			await updateDoc(prodDocRef, {
-				product_quantity: increment(-orderQuantity),
-				history: productHistory,
-			});
+			let productHistory = myProduct.history;
 
 			//Check if product is not drink (to not use size)
 			if (myProduct.product_category != "Drinks") {
+				//Update History and Quantity
+				let orderLog = {
+					type: "",
+					name: "",
+					amount: "",
+					date: "",
+					totalValue: "",
+				};
+
+				orderLog.type = "Ordered";
+				orderLog.name = name;
+				orderLog.amount = parseInt(orderQuantity);
+				orderLog.date = currentDate;
+				orderLog.totalValue = price * parseInt(orderQuantity);
+
+				productHistory.push(orderLog);
+
+				//update product history
+				await updateDoc(prodDocRef, {
+					product_quantity: increment(-orderQuantity),
+					history: productHistory,
+				});
+
 				//On each ingredient in the recipe, do stuff
 				myProduct.recipe.map(async (ingredient) => {
 					//access ingredient document from firebase and deduct amount
 					const docRef = doc(db, "ingredients", ingredient.name);
 
-					const foodDocSnap = await getDoc(docRef);
-
-					let foodHistory = foodDocSnap.data().history;
+					let foodHistory = myProduct.history;
 
 					let foodLog = {
 						type: "",
 						name: "",
-						amount: "",
+						amount: 0,
 						date: "",
 					};
 
@@ -157,15 +184,40 @@ function Cart(props) {
 				});
 			} else {
 				if (typeof size != "undefined") {
+					//Update History and Quantity
+					let orderLog = {
+						type: "",
+						name: "",
+						size: "",
+						amount: 0,
+						date: "",
+						totalValue: "",
+					};
+
+					orderLog.type = "Ordered";
+					orderLog.name = name;
+					orderLog.size = size;
+					orderLog.amount = parseInt(orderQuantity);
+					orderLog.date = currentDate;
+					orderLog.totalValue = price * parseInt(orderQuantity);
+
+					productHistory.push(orderLog);
+
+					let calculatedQuantities = CalculateProductMaxQuantity(name);
+
+					//update product history
+					await updateDoc(prodDocRef, {
+						product_quantities: calculatedQuantities,
+						history: productHistory,
+					});
+
 					myProduct.recipe.map((recipe) => {
 						if (size.toLowerCase() === recipe.size) {
 							recipe.ingredients.map(async (ingredient) => {
 								//access ingredient document from firebase and deduct amount
 								const docRef = doc(db, "ingredients", ingredient.name);
 
-								const drinkDocSnap = await getDoc(docRef);
-
-								let drinkHistory = drinkDocSnap.data().history;
+								let drinkHistory = myProduct.history;
 
 								let drinkLog = {
 									type: "",

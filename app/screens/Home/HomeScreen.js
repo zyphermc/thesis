@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Text, StyleSheet, View, Image, TouchableOpacity } from "react-native";
 import { collection, doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "../../../firebase-config";
+import { useFocusEffect } from "@react-navigation/native";
 
 function HomeScreen(props) {
 	//Ingredients and Products Firebase reference
@@ -11,21 +12,18 @@ function HomeScreen(props) {
 	const [products, SetProducts] = useState([]);
 	const [ingredients, SetIngredients] = useState([]);
 
+	let ingredientsFast = [];
+
 	// Calculate Max Quantities of Products here so that it is the first thing
 	// the app does.
-	const CalculateProductMaxQuantity = async (name) => {
-		console.log("Initialized Product Quantities - Home");
-		if (products.length > 0 && ingredients.length > 0) {
-			const product = products.find((item) => {
-				return item.product_name === name;
-			});
-
-			if (product.product_category == "Food") {
+	const CalculateProductMaxQuantity = async (data) => {
+		if (ingredientsFast.length > 0) {
+			if (data.product_category == "Food") {
 				let product_quantities = [];
 				let availableQuantity = 0;
 
-				product.recipe.map((ingredient) => {
-					const dbIngredient = ingredients.find((item) => {
+				data.recipe.map((ingredient) => {
+					const dbIngredient = ingredientsFast.find((item) => {
 						return item.ingredient_name === ingredient.name;
 					});
 
@@ -39,28 +37,28 @@ function HomeScreen(props) {
 				availableQuantity = Math.min(...product_quantities);
 
 				try {
-					await updateDoc(doc(db, "products", product.product_name), {
+					await updateDoc(doc(db, "products", data.product_name), {
 						product_quantity: availableQuantity,
 					});
 				} catch (err) {
 					console.log(err);
 				}
 			} else {
-				let availableQuantities = product.product_quantities;
+				let availableQuantities = data.product_quantities;
 
-				product.product_quantities.map(async (quantity, index) => {
+				data.product_quantities.map(async (quantity, index) => {
 					let product_quantities = [];
 
 					let availableQuantity = 0;
 
 					//Get recipe according to size
-					const myRecipe = product.recipe.find((item) => {
+					const myRecipe = data.recipe.find((item) => {
 						return item.size === quantity.size;
 					});
 
 					//Iterate through each ingredient and get the max order quantity
 					myRecipe.ingredients.map((ingredient) => {
-						const dbIngredient = ingredients.find((item) => {
+						const dbIngredient = ingredientsFast.find((item) => {
 							return item.ingredient_name === ingredient.name;
 						});
 
@@ -77,7 +75,7 @@ function HomeScreen(props) {
 				});
 
 				try {
-					await updateDoc(doc(db, "products", product.product_name), {
+					await updateDoc(doc(db, "products", data.product_name), {
 						product_quantities: availableQuantities,
 					});
 				} catch (err) {
@@ -97,11 +95,7 @@ function HomeScreen(props) {
 
 				docsSnapshot.docChanges().forEach(async (change) => {
 					if (change.type === "added" || change.type === "modified") {
-						if (products.length > 0) {
-							products.map((product) => {
-								CalculateProductMaxQuantity(product.product_name);
-							});
-						}
+						//
 					}
 				});
 
@@ -111,7 +105,13 @@ function HomeScreen(props) {
 
 				if (isMounted) {
 					//Update Ingredient State with latest data
+					ingredientsFast = myIngredients;
 					SetIngredients(myIngredients);
+
+					products.map((item) => {
+						CalculateProductMaxQuantity(item);
+					});
+					unsub();
 				}
 			});
 		};
@@ -125,16 +125,18 @@ function HomeScreen(props) {
 
 				docsSnapshot.docChanges().forEach(async (change) => {
 					if (change.type === "added" || change.type === "modified") {
-						CalculateProductMaxQuantity(change.doc.data().product_name);
+						//
 					}
 				});
 
 				docsSnapshot.forEach((doc) => {
 					myProducts.push(doc.data());
+					CalculateProductMaxQuantity(doc.data());
 				});
 
 				if (isMounted) {
 					SetProducts(myProducts);
+					unsub();
 				}
 			});
 		};
@@ -145,6 +147,16 @@ function HomeScreen(props) {
 			isMounted = false;
 		};
 	}, []);
+
+	useFocusEffect(
+		React.useCallback(() => {
+			if (products.length > 0) {
+				products.map((item) => {
+					CalculateProductMaxQuantity(item);
+				});
+			}
+		}, [])
+	);
 
 	return (
 		<View style={styles.container}>
