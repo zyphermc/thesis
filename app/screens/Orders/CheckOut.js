@@ -200,12 +200,6 @@ function CheckOut(props) {
 					</View>
 				</View>
 			</View>
-			<Button
-				title="hello"
-				onPress={() => {
-					console.log("BUTTON PRESSED");
-				}}
-			/>
 		</View>
 	);
 }
