@@ -117,6 +117,8 @@ function Cart(props, route) {
 		//note: products should be passed as a parameter or declared to whichever screen
 		//this function is in.
 
+		//OPTIMIZE THIS CODE  - 1/30/2022 11:35PM RICHARD
+
 		//Sizes are "small", "medium", "large"
 
 		if (typeof name != "undefined" && typeof orderQuantity != "undefined") {
