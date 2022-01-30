@@ -38,8 +38,6 @@ function Cart(props, route) {
 	);
 	const [products, SetProducts] = useState(props.route.params.products);
 	const [totalValue, setTotalValue] = useState(0);
-	//Database references
-	const productsCollectionRef = collection(db, "products");
 
 	let Tax = 0;
 	let Subtotal = 0;
@@ -113,155 +111,157 @@ function Cart(props, route) {
 		}
 	};
 
-	const deductItems = async (name, orderQuantity, size, price) => {
-		//note: products should be passed as a parameter or declared to whichever screen
-		//this function is in.
-
+	const deductItems = async (orderList) => {
 		//OPTIMIZE THIS CODE  - 1/30/2022 11:35PM RICHARD
 
-		//Sizes are "small", "medium", "large"
+		let deductionList = [];
+		let promises = [];
 
-		if (typeof name != "undefined" && typeof orderQuantity != "undefined") {
-			//In the list of products, find the product matching "name"
-			const myProduct = products.find((product) => {
-				return product.product_name.toLowerCase().includes(name.toLowerCase());
-			});
-
-			//Log each ordered item in products
-			const prodDocRef = doc(db, "products", name);
-
-			let productHistory = myProduct.history;
-
-			//Check if product is not drink (to not use size)
-			if (myProduct.product_category != "Drinks") {
-				//Update History and Quantity
-				let orderLog = {
-					type: "",
-					name: "",
-					amount: "",
-					date: "",
-					totalValue: "",
-				};
-
-				orderLog.type = "Ordered";
-				orderLog.name = name;
-				orderLog.amount = parseInt(orderQuantity);
-				orderLog.date = currentDate;
-				orderLog.totalValue = price * parseInt(orderQuantity);
-
-				productHistory.push(orderLog);
-
-				//update product history
-				await updateDoc(prodDocRef, {
-					product_quantity: increment(-orderQuantity),
-					history: productHistory,
+		orderList.forEach(async (order) => {
+			if (order.quantity > 0) {
+				//In the list of products, find the product matching "name"
+				const myProduct = products.find((product) => {
+					return product.product_name.includes(order.productName);
 				});
 
-				//On each ingredient in the recipe, do stuff
-				myProduct.recipe.map(async (ingredient) => {
-					//access ingredient document from firebase and deduct amount
-					const docRef = doc(db, "ingredients", ingredient.name);
+				//Log each ordered item in products
+				const prodDocRef = doc(db, "products", order.productName);
 
-					let foodHistory = myProduct.history;
+				let productHistory = myProduct.history;
 
-					let foodLog = {
-						type: "",
-						name: "",
-						amount: 0,
-						date: "",
-					};
-
-					foodLog.type = "Deducted";
-					foodLog.name = name;
-					foodLog.amount = ingredient.amount * orderQuantity;
-					foodLog.date = currentDate;
-
-					foodHistory.push(foodLog);
-
-					//update document and deduct the amount
-					await updateDoc(docRef, {
-						ingredient_stock: increment(-ingredient.amount * orderQuantity),
-						history: foodHistory,
-					});
-				});
-			} else {
-				if (typeof size != "undefined") {
+				//Check if product is not drink (to not use size)
+				if (myProduct.product_category != "Drinks") {
 					//Update History and Quantity
 					let orderLog = {
 						type: "",
 						name: "",
-						size: "",
 						amount: 0,
 						date: "",
-						totalValue: "",
+						totalValue: 0,
 					};
 
 					orderLog.type = "Ordered";
-					orderLog.name = name;
-					orderLog.size = size;
-					orderLog.amount = parseInt(orderQuantity);
+					orderLog.name = order.productName;
+					orderLog.amount = order.quantity;
 					orderLog.date = currentDate;
-					orderLog.totalValue = price * parseInt(orderQuantity);
+					orderLog.totalValue = order.sellingPrice * order.quantity;
 
 					productHistory.push(orderLog);
 
-					let calculatedQuantities = CalculateProductMaxQuantity(name);
-
 					//update product history
-					await updateDoc(prodDocRef, {
-						product_quantities: calculatedQuantities,
+					const productUpdatePromise = updateDoc(prodDocRef, {
+						product_quantity: increment(-order.quantity),
 						history: productHistory,
 					});
 
-					myProduct.recipe.map((recipe) => {
-						if (size.toLowerCase() === recipe.size) {
-							recipe.ingredients.map(async (ingredient) => {
-								//access ingredient document from firebase and deduct amount
-								const docRef = doc(db, "ingredients", ingredient.name);
+					promises.push(productUpdatePromise);
 
-								let drinkHistory = myProduct.history;
+					//On each ingredient in the recipe, do stuff
+					myProduct.recipe.map(async (ingredient) => {
+						//access ingredient document from firebase and deduct amount
+						const docRef = doc(db, "ingredients", ingredient.name);
 
-								let drinkLog = {
-									type: "",
-									name: "",
-									amount: "",
-									date: "",
-								};
+						let foodHistory = myProduct.history;
 
-								drinkLog.type = "Deducted";
-								drinkLog.name = name;
-								drinkLog.amount = ingredient.amount * orderQuantity;
-								drinkLog.date = currentDate;
+						let foodLog = {
+							type: "",
+							name: "",
+							amount: 0,
+							date: "",
+						};
 
-								drinkHistory.push(drinkLog);
+						foodLog.type = "Deducted";
+						foodLog.name = order.productName;
+						foodLog.amount = ingredient.amount * order.quantity;
+						foodLog.date = currentDate;
 
-								//update document and deduct the amount
-								await updateDoc(docRef, {
-									ingredient_stock: increment(
-										-ingredient.amount * orderQuantity
-									),
-									history: drinkHistory,
-								});
-							});
-						}
+						foodHistory.push(foodLog);
+
+						//update document and deduct the amount
+						const ingredientUpdatePromise = updateDoc(docRef, {
+							ingredient_stock: increment(-ingredient.amount * order.quantity),
+							history: foodHistory,
+						});
+
+						promises.push(ingredientUpdatePromise);
 					});
+				} else {
+					if (typeof order.size != "undefined") {
+						//Update History and Quantity
+						let orderLog = {
+							type: "",
+							name: "",
+							size: "",
+							amount: 0,
+							date: "",
+							totalValue: 0,
+						};
+
+						orderLog.type = "Ordered";
+						orderLog.name = order.productName;
+						orderLog.size = order.size;
+						orderLog.amount = order.quantity;
+						orderLog.date = currentDate;
+						orderLog.totalValue = order.sellingPrice * order.quantity;
+
+						productHistory.push(orderLog);
+
+						let calculatedQuantities = CalculateProductMaxQuantity(
+							order.productName
+						);
+
+						//update product history
+						const productUpdatePromise = updateDoc(prodDocRef, {
+							product_quantities: calculatedQuantities,
+							history: productHistory,
+						});
+
+						promises.push(productUpdatePromise);
+
+						myProduct.recipe.map((recipe) => {
+							if (order.size.toLowerCase() === recipe.size) {
+								recipe.ingredients.map(async (ingredient) => {
+									//access ingredient document from firebase and deduct amount
+									const docRef = doc(db, "ingredients", ingredient.name);
+
+									let drinkHistory = myProduct.history;
+
+									let drinkLog = {
+										type: "",
+										name: "",
+										amount: "",
+										date: "",
+									};
+
+									drinkLog.type = "Deducted";
+									drinkLog.name = order.productName;
+									drinkLog.amount = ingredient.amount * order.quantity;
+									drinkLog.date = currentDate;
+
+									drinkHistory.push(drinkLog);
+
+									//update document and deduct the amount
+									const ingredientUpdatePromise = updateDoc(docRef, {
+										ingredient_stock: increment(
+											-ingredient.amount * order.quantity
+										),
+										history: drinkHistory,
+									});
+
+									promises.push(ingredientUpdatePromise);
+								});
+							}
+						});
+					}
 				}
 			}
-		}
-	};
-
-	const UpdateTransactionLog = () => {
-		//Deduct Items and Update Transaction
-		orderProductList.forEach((order) => {
-			if (order.quantity > 0) {
-				deductItems(
-					order.productName,
-					order.quantity,
-					order.size,
-					order.sellingPrice
-				);
-			}
 		});
+
+		const promiseResults = await Promise.all(promises);
+
+		console.log(
+			`FINISHED WRITING TO DATABASE - Promise Amount: ${promiseResults.length}`
+		);
 	};
 
 	const RemoveProductFromList = (name, size) => {
@@ -378,8 +378,8 @@ function Cart(props, route) {
 								Tax = 0;
 								Subtotal = 0;
 								setTotalValue(0);
+								deductItems(orderProductList);
 								SetOrderProductList([]);
-								UpdateTransactionLog();
 							} else {
 								if (totalValue > 0) {
 									Alert.alert("Not enough cash!");
