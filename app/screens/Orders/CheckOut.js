@@ -5,8 +5,8 @@ import {
 	Image,
 	TouchableOpacity,
 	FlatList,
-	Alert,
 	StyleSheet,
+	Button,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import CheckOutComponent from "../../components/CheckOutComponent";
@@ -200,6 +200,12 @@ function CheckOut(props) {
 					</View>
 				</View>
 			</View>
+			<Button
+				title="hello"
+				onPress={() => {
+					console.log("BUTTON PRESSED");
+				}}
+			/>
 		</View>
 	);
 }

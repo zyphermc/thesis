@@ -113,9 +113,9 @@ function Cart(props, route) {
 
 	const deductItems = async (orderList) => {
 		//OPTIMIZE THIS CODE  - 1/30/2022 11:35PM RICHARD
+		const startTime = performance.now();
 
 		let deductionList = [];
-		let promises = [];
 
 		orderList.forEach(async (order) => {
 			if (order.quantity > 0) {
@@ -149,12 +149,10 @@ function Cart(props, route) {
 					productHistory.push(orderLog);
 
 					//update product history
-					const productUpdatePromise = updateDoc(prodDocRef, {
+					const productUpdatePromise = await updateDoc(prodDocRef, {
 						product_quantity: increment(-order.quantity),
 						history: productHistory,
 					});
-
-					promises.push(productUpdatePromise);
 
 					//On each ingredient in the recipe, do stuff
 					myProduct.recipe.map(async (ingredient) => {
@@ -178,12 +176,10 @@ function Cart(props, route) {
 						foodHistory.push(foodLog);
 
 						//update document and deduct the amount
-						const ingredientUpdatePromise = updateDoc(docRef, {
+						const ingredientUpdatePromise = await updateDoc(docRef, {
 							ingredient_stock: increment(-ingredient.amount * order.quantity),
 							history: foodHistory,
 						});
-
-						promises.push(ingredientUpdatePromise);
 					});
 				} else {
 					if (typeof order.size != "undefined") {
@@ -211,14 +207,12 @@ function Cart(props, route) {
 						);
 
 						//update product history
-						const productUpdatePromise = updateDoc(prodDocRef, {
+						const productUpdatePromise = await updateDoc(prodDocRef, {
 							product_quantities: calculatedQuantities,
 							history: productHistory,
 						});
 
-						promises.push(productUpdatePromise);
-
-						myProduct.recipe.map((recipe) => {
+						myProduct.recipe.map(async (recipe) => {
 							if (order.size.toLowerCase() === recipe.size) {
 								recipe.ingredients.map(async (ingredient) => {
 									//access ingredient document from firebase and deduct amount
@@ -241,14 +235,12 @@ function Cart(props, route) {
 									drinkHistory.push(drinkLog);
 
 									//update document and deduct the amount
-									const ingredientUpdatePromise = updateDoc(docRef, {
+									const ingredientUpdatePromise = await updateDoc(docRef, {
 										ingredient_stock: increment(
 											-ingredient.amount * order.quantity
 										),
 										history: drinkHistory,
 									});
-
-									promises.push(ingredientUpdatePromise);
 								});
 							}
 						});
@@ -256,12 +248,6 @@ function Cart(props, route) {
 				}
 			}
 		});
-
-		const promiseResults = await Promise.all(promises);
-
-		console.log(
-			`FINISHED WRITING TO DATABASE - Promise Amount: ${promiseResults.length}`
-		);
 	};
 
 	const RemoveProductFromList = (name, size) => {
