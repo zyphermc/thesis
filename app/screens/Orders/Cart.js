@@ -113,9 +113,9 @@ function Cart(props, route) {
 
 	const deductItems = async (orderList) => {
 		//OPTIMIZE THIS CODE  - 1/30/2022 11:35PM RICHARD
-		const startTime = performance.now();
-
 		let deductionList = [];
+		let promiseList = [];
+		const startTime = performance.now();
 
 		orderList.forEach(async (order) => {
 			if (order.quantity > 0) {
@@ -149,37 +149,28 @@ function Cart(props, route) {
 					productHistory.push(orderLog);
 
 					//update product history
-					const productUpdatePromise = await updateDoc(prodDocRef, {
+					const productUpdatePromise = updateDoc(prodDocRef, {
 						product_quantity: increment(-order.quantity),
 						history: productHistory,
 					});
 
+					promiseList.push(productUpdatePromise);
+
 					//On each ingredient in the recipe, do stuff
 					myProduct.recipe.map(async (ingredient) => {
-						//access ingredient document from firebase and deduct amount
-						const docRef = doc(db, "ingredients", ingredient.name);
+						if (deductionList.some((item) => item.name == ingredient.name)) {
+							const itemIndex = deductionList.findIndex(
+								(item) => item.name == ingredient.name
+							);
 
-						let foodHistory = myProduct.history;
-
-						let foodLog = {
-							type: "",
-							name: "",
-							amount: 0,
-							date: "",
-						};
-
-						foodLog.type = "Deducted";
-						foodLog.name = order.productName;
-						foodLog.amount = ingredient.amount * order.quantity;
-						foodLog.date = currentDate;
-
-						foodHistory.push(foodLog);
-
-						//update document and deduct the amount
-						const ingredientUpdatePromise = await updateDoc(docRef, {
-							ingredient_stock: increment(-ingredient.amount * order.quantity),
-							history: foodHistory,
-						});
+							deductionList[itemIndex].amount +=
+								ingredient.amount * order.quantity;
+						} else {
+							deductionList.push({
+								name: ingredient.name,
+								amount: ingredient.amount * order.quantity,
+							});
+						}
 					});
 				} else {
 					if (typeof order.size != "undefined") {
@@ -207,40 +198,31 @@ function Cart(props, route) {
 						);
 
 						//update product history
-						const productUpdatePromise = await updateDoc(prodDocRef, {
+						const productUpdatePromise = updateDoc(prodDocRef, {
 							product_quantities: calculatedQuantities,
 							history: productHistory,
 						});
 
-						myProduct.recipe.map(async (recipe) => {
+						promiseList.push(productUpdatePromise);
+
+						myProduct.recipe.map((recipe) => {
 							if (order.size.toLowerCase() === recipe.size) {
-								recipe.ingredients.map(async (ingredient) => {
-									//access ingredient document from firebase and deduct amount
-									const docRef = doc(db, "ingredients", ingredient.name);
+								recipe.ingredients.map((ingredient) => {
+									if (
+										deductionList.some((item) => item.name == ingredient.name)
+									) {
+										const itemIndex = deductionList.findIndex(
+											(item) => item.name == ingredient.name
+										);
 
-									let drinkHistory = myProduct.history;
-
-									let drinkLog = {
-										type: "",
-										name: "",
-										amount: "",
-										date: "",
-									};
-
-									drinkLog.type = "Deducted";
-									drinkLog.name = order.productName;
-									drinkLog.amount = ingredient.amount * order.quantity;
-									drinkLog.date = currentDate;
-
-									drinkHistory.push(drinkLog);
-
-									//update document and deduct the amount
-									const ingredientUpdatePromise = await updateDoc(docRef, {
-										ingredient_stock: increment(
-											-ingredient.amount * order.quantity
-										),
-										history: drinkHistory,
-									});
+										deductionList[itemIndex].amount +=
+											ingredient.amount * order.quantity;
+									} else {
+										deductionList.push({
+											name: ingredient.name,
+											amount: ingredient.amount * order.quantity,
+										});
+									}
 								});
 							}
 						});
@@ -248,6 +230,45 @@ function Cart(props, route) {
 				}
 			}
 		});
+
+		deductionList.forEach(async (item) => {
+			//access ingredient document from firebase and deduct amount
+			const docRef = doc(db, "ingredients", item.name);
+
+			const myIngredient = ingredients.find(
+				(ingred) => ingred.ingredient_name == item.name
+			);
+			let ingredientHistory = myIngredient.history;
+
+			let ingredientLog = {
+				type: "",
+				name: "",
+				amount: 0,
+				date: "",
+			};
+
+			ingredientLog.type = "Deducted";
+			ingredientLog.name = item.name;
+			ingredientLog.amount = item.amount;
+			ingredientLog.date = currentDate;
+
+			ingredientHistory.push(ingredientLog);
+
+			//update document and deduct the amount
+			const ingredientUpdatePromise = updateDoc(docRef, {
+				ingredient_stock: increment(-item.amount),
+				history: ingredientHistory,
+			});
+			promiseList.push(ingredientUpdatePromise);
+		});
+
+		const promiseResult = await Promise.all(promiseList);
+		const endTime = performance.now();
+		console.log(
+			`EXECUTED ${promiseResult.length} PROMISES IN ${Math.round(
+				(endTime - startTime) / 1000
+			)} SECONDS`
+		);
 	};
 
 	const RemoveProductFromList = (name, size) => {
