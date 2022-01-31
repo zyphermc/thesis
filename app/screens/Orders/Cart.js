@@ -12,6 +12,7 @@ import {
 } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
+import InputScrollView from "react-native-input-scroll-view";
 
 //Database
 import {
@@ -391,21 +392,23 @@ function Cart(props, route) {
 						<Text style={{ fontSize: 20 }}>₱{Subtotal.toFixed(2)}</Text>
 						<Text style={{ fontSize: 20 }}>₱{Tax.toFixed(2)}</Text>
 						<Text style={{ fontSize: 20 }}>₱{totalValue.toFixed(2)}</Text>
-						<TextInput
-							style={{ height: 30, width: 130, fontSize: 20 }}
-							placeholder="Input Amount"
-							onChangeText={(text) => (cashTendered = text)}
-							defaultValue={cashTendered.toString()}
-							keyboardType="number-pad"
-						/>
+						<InputScrollView>
+							<TextInput
+								style={{ height: 30, width: 130, fontSize: 20 }}
+								placeholder="Input Amount"
+								onChangeText={(text) => (cashTendered = text)}
+								defaultValue={cashTendered.toString()}
+								keyboardType="number-pad"
+								blurOnSubmit={false}
+							/>
+						</InputScrollView>
 					</View>
-
+				</View>
+				<View>
 					<TouchableOpacity
 						style={{
-							position: "absolute",
 							height: 35,
 							width: 110,
-							right: 6,
 							borderRadius: 4,
 							borderWidth: 2,
 							borderColor: "black",
@@ -470,6 +473,7 @@ function Cart(props, route) {
 				)}
 				ListHeaderComponent={GetHeader}
 				ListFooterComponent={GetFooter}
+				removeClippedSubviews={false}
 			/>
 		</View>
 	);

@@ -578,10 +578,14 @@ const styles = StyleSheet.create({
 	textContainer: {
 		justifyContent: "center",
 		paddingLeft: 5,
+		alignItems: "flex-start",
 	},
 	textStyle: {
 		fontSize: 15,
 		color: "black",
+		flexWrap: "wrap",
+		width: 150,
+		alignSelf: "flex-start",
 	},
 	sizeButton: {
 		padding: 5,

@@ -455,7 +455,7 @@ function HomeScreen({ navigation, route }) {
 						style={{
 							position: "absolute",
 							top: 10,
-							left: 15,
+							left: 10,
 							height: 30,
 							width: 90,
 							borderWidth: 1,
@@ -536,8 +536,8 @@ function HomeScreen({ navigation, route }) {
 						}}
 						style={{
 							position: "absolute",
-							top: 360,
-							left: 15,
+							top: 365,
+							left: 10,
 							height: 30,
 							width: 90,
 							borderWidth: 1,
