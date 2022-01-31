@@ -61,6 +61,7 @@ function DrawerNavigation(props) {
 					drawerIcon: (color) => (
 						<Ionicons name="home-outline" size={22} color={color} />
 					),
+					unmountOnBlur: true,
 				}}
 			/>
 
@@ -73,6 +74,7 @@ function DrawerNavigation(props) {
 						drawerIcon: (color) => (
 							<Ionicons name="server-outline" size={22} color={color} />
 						),
+						unmountOnBlur: true,
 					}}
 				/>
 			) : (
@@ -96,6 +98,7 @@ function DrawerNavigation(props) {
 					drawerIcon: (color) => (
 						<Ionicons name="bar-chart-outline" size={22} color={color} />
 					),
+					unmountOnBlur: true,
 				}}
 			/>
 		</Drawer.Navigator>

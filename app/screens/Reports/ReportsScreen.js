@@ -125,27 +125,27 @@ function HomeScreen({ navigation, route }) {
 
 	useEffect(() => {
 		//Get Products from Firestore
-		const getProducts = async () => {
-			const unsub = onSnapshot(productsCollectionRef, (docsSnapshot) => {
-				const myProducts = [];
+		const unsub = onSnapshot(productsCollectionRef, (docsSnapshot) => {
+			const myProducts = [];
 
-				docsSnapshot.forEach((doc) => {
-					myProducts.push(doc.data());
-				});
-
-				docsSnapshot.docChanges().forEach(async (change) => {
-					if (change.type === "added" || change.type === "modified") {
-						UpdatePieChart(myProducts, pieChartTimeframe);
-						UpdateLineChart(myProducts, lineChartTimeframe);
-					}
-				});
-
-				SetProducts(myProducts);
+			docsSnapshot.forEach((doc) => {
+				myProducts.push(doc.data());
 			});
-		};
-		getProducts();
+
+			docsSnapshot.docChanges().forEach(async (change) => {
+				if (change.type === "added" || change.type === "modified") {
+					UpdatePieChart(myProducts, pieChartTimeframe);
+					UpdateLineChart(myProducts, lineChartTimeframe);
+				}
+			});
+
+			SetProducts(myProducts);
+		});
 
 		GetDatesToday();
+		return () => {
+			unsub();
+		};
 	}, []);
 
 	Date.prototype.addDays = function (days) {

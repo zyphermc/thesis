@@ -44,15 +44,14 @@ function ViewProductModal(props) {
 		let isMounted = true;
 
 		//Get Products from Firestore
-		const getProductData = async () => {
-			const unsub = onSnapshot(doc(db, "products", props.itemName), (doc) => {
+		const unsubProducts = onSnapshot(
+			doc(db, "products", props.itemName),
+			(doc) => {
 				if (isMounted) {
 					SetProductData(doc.data());
 				}
-			});
-		};
-
-		getProductData();
+			}
+		);
 
 		//Get ingredient list to show in dropdown
 		const ingredientsColRef = collection(db, "ingredients");
@@ -74,6 +73,7 @@ function ViewProductModal(props) {
 
 		return () => {
 			isMounted = false;
+			unsubProducts();
 		};
 	}, []);
 

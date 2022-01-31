@@ -52,7 +52,6 @@ function OrderScreen({ route }) {
 		if (typeof name != "undefined" && typeof orderQuantity != "undefined") {
 			//Check if product is not drink (to not use size)
 			if (category != "Drinks") {
-				console.log("I DEDUCTED FOOD");
 				//On each ingredient in the recipe, do stuff
 				recipe.map(async (ingredient) => {
 					const myIngredients = ingredients;
@@ -68,7 +67,6 @@ function OrderScreen({ route }) {
 				});
 			} else {
 				if (size != "") {
-					console.log("I DEDUCTED DRINK");
 					recipe.map((recipe) => {
 						if (size.toLowerCase() === recipe.size) {
 							recipe.ingredients.map(async (ingredient) => {
@@ -110,7 +108,6 @@ function OrderScreen({ route }) {
 
 			//Check if product is not drink (to not use size)
 			if (category != "Drinks") {
-				console.log("I RAN FOOD");
 				//On each ingredient in the recipe, do stuff
 				recipe.map(async (ingredient) => {
 					const myIngredients = persistentIngredients;
@@ -126,7 +123,6 @@ function OrderScreen({ route }) {
 				});
 			} else {
 				if (typeof size != "undefined" && persistentProducts.length > 0) {
-					console.log("I RAN DRINKS");
 					recipe.map((recipe) => {
 						if (size.toLowerCase() === recipe.size) {
 							recipe.ingredients.map(async (ingredient) => {
@@ -149,16 +145,77 @@ function OrderScreen({ route }) {
 		}
 	};
 
+	const addItemsOnClear = (orderList) => {
+		orderList.forEach((order) => {
+			let name = order.productName;
+			let orderQuantity = order.quantity;
+			let size = order.size;
+
+			persistentProducts = products;
+			persistentIngredients = ingredients;
+
+			if (
+				typeof name != "undefined" &&
+				typeof orderQuantity != "undefined" &&
+				persistentProducts.length > 0
+			) {
+				let category = persistentProducts.find((item) => {
+					return item.product_name == name;
+				}).product_category;
+				let recipe = persistentProducts.find((item) => {
+					return item.product_name == name;
+				}).recipe;
+
+				//Check if product is not drink (to not use size)
+				if (category != "Drinks") {
+					//On each ingredient in the recipe, do stuff
+					recipe.map(async (ingredient) => {
+						const myIngredients = persistentIngredients;
+
+						const myIngredient = myIngredients.find((item) => {
+							return item.ingredient_name === ingredient.name;
+						});
+
+						//add the amount
+						myIngredient.ingredient_stock += orderQuantity * ingredient.amount;
+
+						SetIngredients(myIngredients);
+					});
+				} else {
+					if (typeof size != "undefined" && persistentProducts.length > 0) {
+						recipe.map((recipe) => {
+							if (size.toLowerCase() === recipe.size) {
+								recipe.ingredients.map(async (ingredient) => {
+									const myIngredients = persistentIngredients;
+
+									const myIngredient = persistentIngredients.find((item) => {
+										return item.ingredient_name === ingredient.name;
+									});
+
+									//add the amount
+									myIngredient.ingredient_stock +=
+										orderQuantity * ingredient.amount;
+
+									SetIngredients(myIngredients);
+								});
+							}
+						});
+					}
+				}
+			}
+		});
+	};
+
 	const deployListener = () => {
 		DeviceEventEmitter.addListener("addItemsLocally", (data) =>
 			addItemsLocally(data)
 		);
+		DeviceEventEmitter.addListener("ClearCartGlobal", () => ClearCartGlobal());
 	};
 
 	useEffect(() => {
 		let isMounted = true;
 		SetIsLoading(true);
-
 		deployListener();
 
 		//Get Ingredients from Firestore
@@ -221,7 +278,7 @@ function OrderScreen({ route }) {
 		return orderProductList;
 	};
 
-	let orderProductList = [];
+	const [orderProductList, SetOrderProductList] = useState([]);
 
 	let OrderedProduct = {
 		productName: "",
@@ -246,7 +303,11 @@ function OrderScreen({ route }) {
 			);
 		});
 		if (orderIndex != -1) {
-			orderProductList[orderIndex].quantity += quantity;
+			let tempOrderProductList = orderProductList;
+
+			tempOrderProductList[orderIndex].quantity += quantity;
+
+			SetOrderProductList(tempOrderProductList);
 		} else {
 			if (quantity > 0) {
 				OrderedProduct = {
@@ -257,17 +318,33 @@ function OrderScreen({ route }) {
 					imageURI: imageURI,
 					size: size,
 				};
-				orderProductList.push(OrderedProduct);
+				let tempOrderProductList = orderProductList;
+
+				tempOrderProductList.push(OrderedProduct);
+				SetOrderProductList(tempOrderProductList);
 			}
 		}
 	};
 
 	const ClearCart = () => {
-		orderProductList = [];
-		showMessage({
-			message: "Cart cleared successfully!",
-			type: "success",
-		});
+		if (orderProductList.length > 0) {
+			addItemsOnClear(orderProductList);
+			console.log("CART CLEARED");
+			SetOrderProductList([]);
+			showMessage({
+				message: "Cart cleared successfully!",
+				type: "success",
+			});
+		} else {
+			showMessage({
+				message: "Cart is already empty!",
+				type: "warning",
+			});
+		}
+	};
+
+	const ClearCartGlobal = () => {
+		SetOrderProductList([]);
 	};
 
 	function ShowProductsComponent() {

@@ -35,41 +35,38 @@ function ViewIngredientModal(props) {
 		let isMounted = true;
 
 		//Get Ingredients from Firestore
-		const getIngredientData = async () => {
-			const unsub = onSnapshot(
-				doc(db, "ingredients", props.itemName),
-				async (document) => {
-					if (isMounted) {
-						SetIngredientData(document.data());
+		const unsub = onSnapshot(
+			doc(db, "ingredients", props.itemName),
+			async (document) => {
+				if (isMounted) {
+					SetIngredientData(document.data());
 
-						const buyLogs = document.data().history.filter((item) => {
-							return item.type == "Initialized" || item.type == "Restock";
-						});
+					const buyLogs = document.data().history.filter((item) => {
+						return item.type == "Initialized" || item.type == "Restock";
+					});
 
-						const buyCount = buyLogs.length;
+					const buyCount = buyLogs.length;
 
-						let tempPrice = 0;
+					let tempPrice = 0;
 
-						buyLogs.map((entry) => {
-							tempPrice += entry.price;
-						});
+					buyLogs.map((entry) => {
+						tempPrice += entry.price;
+					});
 
-						const average_price = tempPrice / buyCount;
+					const average_price = tempPrice / buyCount;
 
-						await updateDoc(
-							doc(db, "ingredients", document.data().ingredient_name),
-							{
-								ingredient_unitPrice_avg: Math.round(average_price),
-							}
-						);
-					}
+					await updateDoc(
+						doc(db, "ingredients", document.data().ingredient_name),
+						{
+							ingredient_unitPrice_avg: Math.round(average_price),
+						}
+					);
 				}
-			);
-		};
-
-		getIngredientData();
+			}
+		);
 		return () => {
 			isMounted = false;
+			unsub();
 		};
 	}, []);
 

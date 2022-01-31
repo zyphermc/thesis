@@ -89,8 +89,9 @@ function HomeScreen(props) {
 		let isMounted = true;
 
 		//Get Ingredients from Firestore
-		const getIngredients = async () => {
-			const unsub = onSnapshot(ingredientsCollectionRef, (docsSnapshot) => {
+		const unsubIngredients = onSnapshot(
+			ingredientsCollectionRef,
+			(docsSnapshot) => {
 				const myIngredients = [];
 
 				docsSnapshot.docChanges().forEach(async (change) => {
@@ -111,40 +112,34 @@ function HomeScreen(props) {
 					products.map((item) => {
 						CalculateProductMaxQuantity(item);
 					});
-					unsub();
 				}
-			});
-		};
-
-		getIngredients();
+			}
+		);
 
 		//Get Products from Firestore
-		const getProducts = async () => {
-			const unsub = onSnapshot(productsCollectionRef, (docsSnapshot) => {
-				const myProducts = [];
+		const unsubProducts = onSnapshot(productsCollectionRef, (docsSnapshot) => {
+			const myProducts = [];
 
-				docsSnapshot.docChanges().forEach(async (change) => {
-					if (change.type === "added" || change.type === "modified") {
-						//
-					}
-				});
-
-				docsSnapshot.forEach((doc) => {
-					myProducts.push(doc.data());
-					CalculateProductMaxQuantity(doc.data());
-				});
-
-				if (isMounted) {
-					SetProducts(myProducts);
-					unsub();
+			docsSnapshot.docChanges().forEach(async (change) => {
+				if (change.type === "added" || change.type === "modified") {
+					//
 				}
 			});
-		};
 
-		getProducts();
+			docsSnapshot.forEach((doc) => {
+				myProducts.push(doc.data());
+				CalculateProductMaxQuantity(doc.data());
+			});
+
+			if (isMounted) {
+				SetProducts(myProducts);
+			}
+		});
 
 		return () => {
 			isMounted = false;
+			unsubIngredients();
+			unsubProducts();
 		};
 	}, []);
 
