@@ -42,8 +42,6 @@ function OrderScreen({ route }) {
 
 	const [products, SetProducts] = useState([]);
 	const [ingredients, SetIngredients] = useState([]);
-	const [ingredientsSnapshot, SetIngredientsSnapshot] = useState([]);
-	const [productsSnapshot, SetProductsSnapshot] = useState([]);
 	const [filteredProducts, SetFilteredProducts] = useState([]);
 
 	const [orderProductList, SetOrderProductList] = useState([]);
@@ -150,12 +148,6 @@ function OrderScreen({ route }) {
 		}
 	};
 
-	const updateUpdater = async () => {
-		await updateDoc(doc(db, "updater", "update"), {
-			count: increment(1),
-		});
-	};
-
 	const deployListener = () => {
 		DeviceEventEmitter.addListener("addItemsLocally", (data) =>
 			addItemsLocally(data)
@@ -181,7 +173,6 @@ function OrderScreen({ route }) {
 				//Update Ingredient State with latest data
 				persistentIngredients = myIngredients;
 				SetIngredients(myIngredients);
-				SetIngredientsSnapshot(myIngredients);
 			}
 		};
 
@@ -201,7 +192,6 @@ function OrderScreen({ route }) {
 				persistentProducts = myProducts;
 				SetProducts(myProducts);
 				SetFilteredProducts(myProducts);
-				SetProductsSnapshot(myProducts);
 			}
 		};
 
@@ -357,10 +347,14 @@ function OrderScreen({ route }) {
 						<TouchableOpacity
 							style={styles.addItemButtonContainer}
 							onPress={() => {
+								persistentProducts = products;
+								persistentIngredients = ingredients;
+								let orderProductListFast = orderProductList;
+
 								navigation.navigate("Tab", {
-									products: products,
-									ingredients: ingredients,
-									orderProductList: orderProductList,
+									products: persistentProducts,
+									ingredients: persistentIngredients,
+									orderProductList: orderProductListFast,
 								});
 							}}
 						>
