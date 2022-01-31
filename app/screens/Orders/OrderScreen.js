@@ -20,7 +20,6 @@ import {
 	onSnapshot,
 	updateDoc,
 	getDocs,
-	increment,
 } from "firebase/firestore";
 
 import { showMessage } from "react-native-flash-message";
@@ -42,11 +41,7 @@ function OrderScreen({ route }) {
 
 	const [products, SetProducts] = useState([]);
 	const [ingredients, SetIngredients] = useState([]);
-	const [ingredientsSnapshot, SetIngredientsSnapshot] = useState([]);
-	const [productsSnapshot, SetProductsSnapshot] = useState([]);
 	const [filteredProducts, SetFilteredProducts] = useState([]);
-
-	const [orderProductList, SetOrderProductList] = useState([]);
 
 	const navigation = useNavigation();
 
@@ -57,6 +52,7 @@ function OrderScreen({ route }) {
 		if (typeof name != "undefined" && typeof orderQuantity != "undefined") {
 			//Check if product is not drink (to not use size)
 			if (category != "Drinks") {
+				console.log("I DEDUCTED FOOD");
 				//On each ingredient in the recipe, do stuff
 				recipe.map(async (ingredient) => {
 					const myIngredients = ingredients;
@@ -72,6 +68,7 @@ function OrderScreen({ route }) {
 				});
 			} else {
 				if (size != "") {
+					console.log("I DEDUCTED DRINK");
 					recipe.map((recipe) => {
 						if (size.toLowerCase() === recipe.size) {
 							recipe.ingredients.map(async (ingredient) => {
@@ -102,20 +99,21 @@ function OrderScreen({ route }) {
 		if (
 			typeof name != "undefined" &&
 			typeof orderQuantity != "undefined" &&
-			products.length > 0
+			persistentProducts.length > 0
 		) {
-			let category = products.find((item) => {
+			let category = persistentProducts.find((item) => {
 				return item.product_name == name;
 			}).product_category;
-			let recipe = products.find((item) => {
+			let recipe = persistentProducts.find((item) => {
 				return item.product_name == name;
 			}).recipe;
 
 			//Check if product is not drink (to not use size)
 			if (category != "Drinks") {
+				console.log("I RAN FOOD");
 				//On each ingredient in the recipe, do stuff
 				recipe.map(async (ingredient) => {
-					const myIngredients = ingredients;
+					const myIngredients = persistentIngredients;
 
 					const myIngredient = myIngredients.find((item) => {
 						return item.ingredient_name === ingredient.name;
@@ -123,17 +121,18 @@ function OrderScreen({ route }) {
 
 					//add the amount
 					myIngredient.ingredient_stock += orderQuantity * ingredient.amount;
-					console.log("INGREDIENTS ADDED");
+
 					SetIngredients(myIngredients);
 				});
 			} else {
-				if (size != "" && products.length > 0) {
+				if (typeof size != "undefined" && persistentProducts.length > 0) {
+					console.log("I RAN DRINKS");
 					recipe.map((recipe) => {
 						if (size.toLowerCase() === recipe.size) {
 							recipe.ingredients.map(async (ingredient) => {
-								const myIngredients = ingredients;
+								const myIngredients = persistentIngredients;
 
-								const myIngredient = ingredients.find((item) => {
+								const myIngredient = persistentIngredients.find((item) => {
 									return item.ingredient_name === ingredient.name;
 								});
 
@@ -148,12 +147,6 @@ function OrderScreen({ route }) {
 				}
 			}
 		}
-	};
-
-	const updateUpdater = async () => {
-		await updateDoc(doc(db, "updater", "update"), {
-			count: increment(1),
-		});
 	};
 
 	const deployListener = () => {
@@ -181,7 +174,6 @@ function OrderScreen({ route }) {
 				//Update Ingredient State with latest data
 				persistentIngredients = myIngredients;
 				SetIngredients(myIngredients);
-				SetIngredientsSnapshot(myIngredients);
 			}
 		};
 
@@ -201,7 +193,6 @@ function OrderScreen({ route }) {
 				persistentProducts = myProducts;
 				SetProducts(myProducts);
 				SetFilteredProducts(myProducts);
-				SetProductsSnapshot(myProducts);
 			}
 		};
 
@@ -230,6 +221,8 @@ function OrderScreen({ route }) {
 		return orderProductList;
 	};
 
+	let orderProductList = [];
+
 	let OrderedProduct = {
 		productName: "",
 		quantity: "",
@@ -252,12 +245,8 @@ function OrderScreen({ route }) {
 				order.productName.includes(productName) && order.size.includes(size)
 			);
 		});
-
-		let tempOrderProductList = orderProductList;
-
 		if (orderIndex != -1) {
-			tempOrderProductList[orderIndex].quantity += quantity;
-			SetOrderProductList(tempOrderProductList);
+			orderProductList[orderIndex].quantity += quantity;
 		} else {
 			if (quantity > 0) {
 				OrderedProduct = {
@@ -268,33 +257,17 @@ function OrderScreen({ route }) {
 					imageURI: imageURI,
 					size: size,
 				};
-				tempOrderProductList.push(OrderedProduct);
-				SetOrderProductList(tempOrderProductList);
+				orderProductList.push(OrderedProduct);
 			}
 		}
 	};
 
 	const ClearCart = () => {
-		if (orderProductList.length > 0) {
-			orderProductList.forEach((order) => {
-				const data = { data: [order.productName, order.quantity, order.size] };
-
-				addItemsLocally(data);
-			});
-
-			let tempOrderProductList = [];
-			SetOrderProductList(tempOrderProductList);
-
-			showMessage({
-				message: "Cart cleared successfully!",
-				type: "success",
-			});
-		} else {
-			showMessage({
-				message: "Cart is empty!",
-				type: "warning",
-			});
-		}
+		orderProductList = [];
+		showMessage({
+			message: "Cart cleared successfully!",
+			type: "success",
+		});
 	};
 
 	function ShowProductsComponent() {
