@@ -145,7 +145,7 @@ function HomeScreen({ navigation, route }) {
 				type: "base64",
 				bookType: "xlsx",
 			});
-			const uri = `${FileSystem.documentDirectory}thisIsAFolder/${fileName}`;
+			const uri = `${FileSystem.documentDirectory}${fileName}`;
 
 			try {
 				await FileSystem.writeAsStringAsync(uri, wbout, {
