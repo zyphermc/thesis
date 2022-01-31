@@ -17,10 +17,9 @@ import { useNavigation } from "@react-navigation/native";
 import {
 	collection,
 	doc,
-	getDoc,
-	getDocs,
 	increment,
 	updateDoc,
+	addDoc,
 } from "firebase/firestore";
 import { db } from "../../../firebase-config";
 
@@ -118,8 +117,37 @@ function Cart(props, route) {
 		let promiseList = [];
 		const startTime = performance.now();
 
+		let transactionValue = 0;
+
+		let transactionLog = {
+			date: currentDate,
+			ordered_items: [],
+			transaction_value: 0,
+			cash_tendered: parseInt(cashTendered),
+			cash_change: 0,
+		};
+
+		transactionLog.date = currentDate;
+
 		orderList.forEach(async (order) => {
 			if (order.quantity > 0) {
+				//Update Transaction Log
+				let orderedItemTemplate = {
+					amount: 0,
+					name: "",
+					price: 0,
+					total_value: 0,
+				};
+
+				orderedItemTemplate.amount = order.quantity;
+				orderedItemTemplate.name = order.productName;
+				orderedItemTemplate.price = order.sellingPrice;
+				orderedItemTemplate.total_value = order.sellingPrice * order.quantity;
+
+				transactionLog.transaction_value += order.sellingPrice * order.quantity;
+				transactionValue += order.sellingPrice * order.quantity;
+				transactionLog.ordered_items.push(orderedItemTemplate);
+
 				//In the list of products, find the product matching "name"
 				const myProduct = products.find((product) => {
 					return product.product_name.includes(order.productName);
@@ -262,6 +290,14 @@ function Cart(props, route) {
 			});
 			promiseList.push(ingredientUpdatePromise);
 		});
+
+		//Update Transaction Log in Database
+		transactionLog.cash_change = parseInt(cashTendered) - totalValue;
+		const transactionsUpdatePromise = addDoc(
+			collection(db, "transactions"),
+			transactionLog
+		);
+		promiseList.push(transactionsUpdatePromise);
 
 		const promiseResult = await Promise.all(promiseList);
 
