@@ -19,6 +19,12 @@ import { showMessage } from "react-native-flash-message";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../../firebase-config";
 
+//Excel Writing
+import XLSX from "xlsx";
+import * as FileSystem from "expo-file-system";
+import * as MediaLibrary from "expo-media-library";
+import * as Permissions from "expo-permissions";
+
 function HomeScreen({ navigation, route }) {
 	const [products, SetProducts] = useState([]);
 	const [myPieData, SetMyPieData] = useState([]);
@@ -107,11 +113,49 @@ function HomeScreen({ navigation, route }) {
 	};
 
 	//Export data into excel or CSV
-	const exportData = (type) => {
+	const exportData = async (type) => {
 		if (type == "excel") {
-			//do stuff
+			var data = [
+				{
+					name: "John",
+					city: "Seattle",
+				},
+				{
+					name: "Mike",
+					city: "Los Angeles",
+				},
+				{
+					name: "Zach",
+					city: "New York",
+				},
+			];
+			const ws = XLSX.utils.json_to_sheet(data);
+			const wb = XLSX.utils.book_new();
+
+			XLSX.utils.book_append_sheet(wb, ws, "Logs");
+
+			const wbout = XLSX.write(wb, {
+				type: "base64",
+				bookType: "xlsx",
+			});
+			const uri = `${FileSystem.cacheDirectory}logs.xlsx`;
+
+			await FileSystem.writeAsStringAsync(uri, wbout, {
+				encoding: FileSystem.EncodingType.Base64,
+			});
+
+			saveFile(uri);
 		} else if (type == "csv") {
-			//doo stuff
+			//
+		}
+	};
+
+	const saveFile = async (fileUri) => {
+		const { status } = await MediaLibrary.requestPermissionsAsync();
+		if (status === "granted") {
+			const asset = await MediaLibrary.createAssetAsync(fileUri);
+			await MediaLibrary.createAlbumAsync("Download", asset, false);
+			console.log("File Downloaded");
 		}
 	};
 
@@ -511,14 +555,14 @@ function HomeScreen({ navigation, route }) {
 						>
 							<Text style={{ color: "white" }}>Export Data as Excel</Text>
 						</TouchableOpacity>
-						<TouchableOpacity
+						{/* <TouchableOpacity
 							onPress={() => {
 								exportData("csv");
 							}}
 							style={styles.exportButton}
 						>
 							<Text style={{ color: "white" }}>Export Data as CSV</Text>
-						</TouchableOpacity>
+						</TouchableOpacity> */}
 					</View>
 				</View>
 			</ScrollView>
