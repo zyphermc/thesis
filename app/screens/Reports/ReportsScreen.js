@@ -16,19 +16,21 @@ import { LineChart, PieChart } from "react-native-chart-kit";
 import { showMessage } from "react-native-flash-message";
 
 //Database
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, getDocs, doc } from "firebase/firestore";
 import { db } from "../../../firebase-config";
 
 //Excel Writing
 import XLSX from "xlsx";
 import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
-import * as Permissions from "expo-permissions";
+import flatten from "flat";
 
 function HomeScreen({ navigation, route }) {
 	const [products, SetProducts] = useState([]);
 	const [myPieData, SetMyPieData] = useState([]);
 	const [myLineData, SetMyLineData] = useState([0]);
+	const [transactions, SetTransactions] = useState([]);
+	const [flatTransactions, SetFlatTransactions] = useState([]);
 
 	//daily, weekly, monthly
 	const [lineChartTimeframe, SetLineChartTimeframe] = useState("daily");
@@ -67,6 +69,7 @@ function HomeScreen({ navigation, route }) {
 
 	//Database references
 	const productsCollectionRef = collection(db, "products");
+	const transactionsCollectionRef = collection(db, "transactions");
 
 	//Starting and Ending Dates
 	const [dateToday, SetDateToday] = useState("");
@@ -129,8 +132,12 @@ function HomeScreen({ navigation, route }) {
 					city: "New York",
 				},
 			];
-			const ws = XLSX.utils.json_to_sheet(data);
+
+			console.log(flatTransactions);
+			//CODE BELOW IS WORKING ON PHONE, BUT NOT ON EMULATOR
+			const ws = XLSX.utils.json_to_sheet(flatTransactions);
 			const wb = XLSX.utils.book_new();
+			const fileName = "logs.xlsx";
 
 			XLSX.utils.book_append_sheet(wb, ws, "Logs");
 
@@ -138,24 +145,35 @@ function HomeScreen({ navigation, route }) {
 				type: "base64",
 				bookType: "xlsx",
 			});
-			const uri = `${FileSystem.cacheDirectory}logs.xlsx`;
+			const uri = `${FileSystem.documentDirectory}${fileName}`;
 
-			await FileSystem.writeAsStringAsync(uri, wbout, {
-				encoding: FileSystem.EncodingType.Base64,
-			});
-
-			saveFile(uri);
+			try {
+				await FileSystem.writeAsStringAsync(uri, wbout, {
+					encoding: FileSystem.EncodingType.Base64,
+				});
+				saveFile(fileName, uri);
+			} catch (err) {
+				console.log(err);
+				showMessage({
+					message: `${err}`,
+					type: "danger",
+				});
+			}
 		} else if (type == "csv") {
 			//
 		}
 	};
 
-	const saveFile = async (fileUri) => {
+	const saveFile = async (fileName, fileUri) => {
 		const { status } = await MediaLibrary.requestPermissionsAsync();
 		if (status === "granted") {
 			const asset = await MediaLibrary.createAssetAsync(fileUri);
 			await MediaLibrary.createAlbumAsync("Download", asset, false);
 			console.log("File Downloaded");
+			showMessage({
+				message: `${fileName} Downloaded`,
+				type: "success",
+			});
 		}
 	};
 
@@ -167,7 +185,7 @@ function HomeScreen({ navigation, route }) {
 		return `#${randomColor}`;
 	};
 
-	useEffect(() => {
+	useEffect(async () => {
 		//Get Products from Firestore
 		const unsub = onSnapshot(productsCollectionRef, (docsSnapshot) => {
 			const myProducts = [];
@@ -185,6 +203,19 @@ function HomeScreen({ navigation, route }) {
 
 			SetProducts(myProducts);
 		});
+
+		const transactionDocsSnapshot = await getDocs(transactionsCollectionRef);
+
+		const myTransactions = [];
+		const myFlatTransactions = [];
+
+		transactionDocsSnapshot.forEach((doc) => {
+			myTransactions.push(doc.data());
+			myFlatTransactions.push(flatten(doc.data()));
+		});
+
+		SetTransactions(myTransactions);
+		SetFlatTransactions(myFlatTransactions);
 
 		GetDatesToday();
 		return () => {
