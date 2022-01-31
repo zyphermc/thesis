@@ -8,6 +8,7 @@ import {
 	TextInput,
 	Alert,
 	LogBox,
+	DeviceEventEmitter,
 } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
@@ -263,7 +264,11 @@ function Cart(props, route) {
 		});
 
 		const promiseResult = await Promise.all(promiseList);
+
 		const endTime = performance.now();
+
+		DeviceEventEmitter.emit("ClearCartGlobal", {});
+
 		console.log(
 			`EXECUTED ${promiseResult.length} PROMISES IN ${Math.round(
 				(endTime - startTime) / 1000

@@ -65,9 +65,9 @@ function InventoryScreen({ route }) {
 		let isMounted = true;
 		SetIsLoading(true);
 
-		//Get Ingredients from Firestore
-		const getIngredients = async () => {
-			const unsub = onSnapshot(ingredientsCollectionRef, (docsSnapshot) => {
+		const unsubIngredients = onSnapshot(
+			ingredientsCollectionRef,
+			(docsSnapshot) => {
 				const myIngredients = [];
 
 				//Update ROP, EOQ, and stock status of each added or modified Ingredient
@@ -129,40 +129,37 @@ function InventoryScreen({ route }) {
 					SetIngredients(myIngredients);
 					SetFilteredIngredients(myIngredients);
 				}
-			});
-		};
-
-		getIngredients();
+			}
+		);
 
 		//Get Products from Firestore
-		const getProducts = async () => {
-			const unsub = onSnapshot(productsCollectionRef, (docsSnapshot) => {
-				const myProducts = [];
+		const unsubProducts = onSnapshot(productsCollectionRef, (docsSnapshot) => {
+			const myProducts = [];
 
-				docsSnapshot.docChanges().forEach(async (change) => {
-					if (change.type === "added" || change.type === "modified") {
-						//If there is a document added or modified,
-						//do stuff here
-					}
-				});
-
-				docsSnapshot.forEach((doc) => {
-					myProducts.push(doc.data());
-				});
-
-				if (isMounted) {
-					SetProducts(myProducts);
-					SetFilteredProducts(myProducts);
-					productsFast = myProducts;
+			docsSnapshot.docChanges().forEach(async (change) => {
+				if (change.type === "added" || change.type === "modified") {
+					//If there is a document added or modified,
+					//do stuff here
 				}
 			});
-		};
 
-		getProducts();
+			docsSnapshot.forEach((doc) => {
+				myProducts.push(doc.data());
+			});
+
+			if (isMounted) {
+				SetProducts(myProducts);
+				SetFilteredProducts(myProducts);
+				productsFast = myProducts;
+			}
+		});
 
 		SetIsLoading(false);
+
 		return () => {
 			isMounted = false;
+			unsubIngredients();
+			unsubProducts();
 		};
 	}, []);
 
