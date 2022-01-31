@@ -19,8 +19,11 @@ import {
 	deleteDoc,
 	onSnapshot,
 	updateDoc,
+<<<<<<< HEAD
 	getDocs,
 	increment,
+=======
+>>>>>>> parent of 1290f20 (OPTIMIZED DATABASE WRITING)
 } from "firebase/firestore";
 
 import { showMessage } from "react-native-flash-message";
@@ -162,37 +165,50 @@ function OrderScreen({ route }) {
 
 		//Get Ingredients from Firestore
 		const getIngredients = async () => {
-			const docsSnapshot = await getDocs(ingredientsCollectionRef);
-			const myIngredients = [];
+			const unsub = onSnapshot(ingredientsCollectionRef, (docsSnapshot) => {
+				const myIngredients = [];
 
-			docsSnapshot.forEach((doc) => {
-				myIngredients.push(doc.data());
+				docsSnapshot.docChanges().forEach(async (change) => {
+					if (change.type === "added" || change.type === "modified") {
+						//Functions here
+					}
+				});
+
+				docsSnapshot.forEach((doc) => {
+					myIngredients.push(doc.data());
+				});
+
+				if (isMounted) {
+					//Update Ingredient State with latest data
+					persistentIngredients = myIngredients;
+					SetIngredients(myIngredients);
+				}
 			});
-
-			if (isMounted) {
-				//Update Ingredient State with latest data
-				persistentIngredients = myIngredients;
-				SetIngredients(myIngredients);
-			}
 		};
 
 		getIngredients();
 
 		//Get Products from Firestore
 		const getProducts = async () => {
-			const docsSnapshot = await getDocs(productsCollectionRef);
+			const unsub = onSnapshot(productsCollectionRef, (docsSnapshot) => {
+				const myProducts = [];
 
-			const myProducts = [];
+				docsSnapshot.docChanges().forEach(async (change) => {
+					if (change.type === "added" || change.type === "modified") {
+						//Put functions here
+					}
+				});
 
-			docsSnapshot.forEach((doc) => {
-				myProducts.push(doc.data());
+				docsSnapshot.forEach((doc) => {
+					myProducts.push(doc.data());
+				});
+
+				if (isMounted) {
+					persistentProducts = myProducts;
+					SetProducts(myProducts);
+					SetFilteredProducts(myProducts);
+				}
 			});
-
-			if (isMounted) {
-				persistentProducts = myProducts;
-				SetProducts(myProducts);
-				SetFilteredProducts(myProducts);
-			}
 		};
 
 		getProducts();
