@@ -19,11 +19,6 @@ import {
 	deleteDoc,
 	onSnapshot,
 	updateDoc,
-<<<<<<< HEAD
-	getDocs,
-	increment,
-=======
->>>>>>> parent of 1290f20 (OPTIMIZED DATABASE WRITING)
 } from "firebase/firestore";
 
 import { showMessage } from "react-native-flash-message";
@@ -35,7 +30,7 @@ import { db } from "../../../firebase-config";
 //Import Ingredient List Item component
 import PosComponent from "../../components/PosComponent";
 
-function OrderScreen({ route }) {
+function OrderScreen() {
 	//Viewing Product or Ingredient State
 	const [isLoading, SetIsLoading] = useState(true);
 
