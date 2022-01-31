@@ -127,8 +127,10 @@ function Cart(props, route) {
 			cash_tendered: parseInt(cashTendered),
 			cash_change: 0,
 		};
+		const DateNow = new Date();
+		const myDate = `${DateNow.toLocaleDateString()} ${DateNow.toLocaleTimeString()}`;
 
-		transactionLog.date = currentDate;
+		transactionLog.date = myDate;
 
 		orderList.forEach(async (order) => {
 			if (order.quantity > 0) {
@@ -399,7 +401,6 @@ function Cart(props, route) {
 								onChangeText={(text) => (cashTendered = text)}
 								defaultValue={cashTendered.toString()}
 								keyboardType="number-pad"
-								blurOnSubmit={false}
 							/>
 						</InputScrollView>
 					</View>
