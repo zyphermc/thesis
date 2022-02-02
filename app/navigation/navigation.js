@@ -56,7 +56,6 @@ function DrawerNavigation(props) {
 			<Drawer.Screen
 				name="Home"
 				component={HomeScreen}
-				initialParams={{ isAdmin: isAdmin }}
 				options={{
 					drawerIcon: (color) => (
 						<Ionicons name="home-outline" size={22} color={color} />
@@ -69,7 +68,6 @@ function DrawerNavigation(props) {
 				<Drawer.Screen
 					name="Inventory"
 					component={InventoryScreen}
-					initialParams={{ isAdmin: isAdmin }}
 					options={{
 						drawerIcon: (color) => (
 							<Ionicons name="server-outline" size={22} color={color} />
@@ -83,17 +81,16 @@ function DrawerNavigation(props) {
 			<Drawer.Screen
 				name="Point of Sale"
 				component={OrderScreen}
-				initialParams={{ isAdmin: isAdmin }}
 				options={{
 					drawerIcon: (color) => (
 						<Ionicons name="fast-food-outline" size={22} color={color} />
 					),
+					unmountOnBlur: true,
 				}}
 			/>
 			<Drawer.Screen
 				name="Reports"
 				component={ReportsScreen}
-				initialParams={{ isAdmin: isAdmin }}
 				options={{
 					drawerIcon: (color) => (
 						<Ionicons name="bar-chart-outline" size={22} color={color} />

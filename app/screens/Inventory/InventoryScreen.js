@@ -38,8 +38,6 @@ import IngredientItemComponent from "../../components/IngredientItemComponent";
 import ProductItemComponent from "../../components/ProductItemComponent";
 
 function InventoryScreen({ route }) {
-	const [isAdmin] = useState(route.params.isAdmin);
-
 	const [ingredients, SetIngredients] = useState([]);
 	const [filteredIngredients, SetFilteredIngredients] = useState([]);
 
@@ -57,9 +55,6 @@ function InventoryScreen({ route }) {
 	//Ingredients and Products Firebase reference
 	const ingredientsCollectionRef = collection(db, "ingredients");
 	const productsCollectionRef = collection(db, "products");
-
-	let ingredientsFast = [];
-	let productsFast = [];
 
 	useEffect(() => {
 		let isMounted = true;
@@ -125,7 +120,6 @@ function InventoryScreen({ route }) {
 
 				if (isMounted) {
 					//Update Ingredient State with latest data
-					ingredientsFast = myIngredients;
 					SetIngredients(myIngredients);
 					SetFilteredIngredients(myIngredients);
 				}
@@ -136,13 +130,6 @@ function InventoryScreen({ route }) {
 		const unsubProducts = onSnapshot(productsCollectionRef, (docsSnapshot) => {
 			const myProducts = [];
 
-			docsSnapshot.docChanges().forEach(async (change) => {
-				if (change.type === "added" || change.type === "modified") {
-					//If there is a document added or modified,
-					//do stuff here
-				}
-			});
-
 			docsSnapshot.forEach((doc) => {
 				myProducts.push(doc.data());
 			});
@@ -150,7 +137,6 @@ function InventoryScreen({ route }) {
 			if (isMounted) {
 				SetProducts(myProducts);
 				SetFilteredProducts(myProducts);
-				productsFast = myProducts;
 			}
 		});
 
@@ -163,24 +149,14 @@ function InventoryScreen({ route }) {
 		};
 	}, []);
 
-	useFocusEffect(
-		React.useCallback(() => {
-			if (productsFast.length > 0) {
-				productsFast.map((item) => {
-					CalculateProductMaxQuantity(item);
-				});
-			}
-		}, [])
-	);
-
 	const CalculateProductMaxQuantity = async (data) => {
-		if (ingredientsFast.length > 0) {
+		if (ingredients.length > 0) {
 			if (data.product_category == "Food") {
 				let product_quantities = [];
 				let availableQuantity = 0;
 
 				data.recipe.map((ingredient) => {
-					const dbIngredient = ingredientsFast.find((item) => {
+					const dbIngredient = ingredients.find((item) => {
 						return item.ingredient_name === ingredient.name;
 					});
 
@@ -215,7 +191,7 @@ function InventoryScreen({ route }) {
 
 					//Iterate through each ingredient and get the max order quantity
 					myRecipe.ingredients.map((ingredient) => {
-						const dbIngredient = ingredientsFast.find((item) => {
+						const dbIngredient = ingredients.find((item) => {
 							return item.ingredient_name === ingredient.name;
 						});
 
@@ -448,6 +424,11 @@ function InventoryScreen({ route }) {
 								isViewing === "Ingredients"
 									? SetIsViewing("Products")
 									: SetIsViewing("Ingredients");
+
+								products.map((item) => {
+									console.log(`${item.product_name} updated ingred version`);
+									CalculateProductMaxQuantity(item);
+								});
 							}}
 						>
 							<Ionicons

@@ -7,7 +7,6 @@ import { Image, ImageBackground, Text, View } from "react-native";
 
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { Directions } from "react-native-gesture-handler";
 
 //Firestore Database
 import { getDoc, doc } from "firebase/firestore";

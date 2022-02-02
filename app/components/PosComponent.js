@@ -207,9 +207,7 @@ function PosComponent(props) {
 				{props.category == "Food" ? (
 					<Text style={styles.textStyle}>
 						Quantity:{" "}
-						{availableQuantity != -1
-							? availableQuantity
-							: availableQuantityFast}
+						{availableQuantity != -1 ? availableQuantity : "Loading..."}
 					</Text>
 				) : (
 					<View>
@@ -218,19 +216,19 @@ function PosComponent(props) {
 							Small -{" "}
 							{availableQuantitySmall != -1
 								? availableQuantitySmall
-								: availableQuantitySmallFast}
+								: "Loading..."}
 						</Text>
 						<Text style={styles.textStyle}>
 							Medium -{" "}
 							{availableQuantityMedium != -1
 								? availableQuantityMedium
-								: availableQuantityMediumFast}
+								: "Loading..."}
 						</Text>
 						<Text style={styles.textStyle}>
 							Large -{" "}
 							{availableQuantityLarge != -1
 								? availableQuantityLarge
-								: availableQuantityLargeFast}
+								: "Loading..."}
 						</Text>
 					</View>
 				)}

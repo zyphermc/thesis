@@ -13,10 +13,9 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { showMessage } from "react-native-flash-message";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
 
 import { authentication, db } from "../../../firebase-config";
-import { adminList } from "../Login/AdminList";
 
 function LoginScreen() {
 	const [email, setEmail] = useState("");
@@ -26,7 +25,7 @@ function LoginScreen() {
 
 	const handleSignIn = () => {
 		signInWithEmailAndPassword(authentication, email, password)
-			.then((re) => {
+			.then(async (re) => {
 				console.log(re);
 
 				UpdateSignIn(true);
@@ -35,6 +34,11 @@ function LoginScreen() {
 					message: "Successfully logged in!",
 					type: "success",
 				});
+
+				const emailDocSnap = await getDoc(
+					doc(db, "emails", email.toLowerCase())
+				);
+				setIsAdmin(emailDocSnap.data().isAdmin);
 			})
 			.catch((err) => {
 				console.log(err);
@@ -43,13 +47,6 @@ function LoginScreen() {
 					type: "danger",
 				});
 			});
-
-		//Check if email is admin
-		if (adminList.includes(email) && !isAdmin) {
-			setIsAdmin(true);
-		} else {
-			setIsAdmin(false);
-		}
 	};
 
 	const handleSignOut = () => {
