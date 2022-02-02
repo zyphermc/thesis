@@ -33,19 +33,22 @@ function ProductHistoryModal(props) {
 			</TouchableOpacity>
 
 			<View style={{ marginTop: 5 }}>
-				{productHistories.map((entry, index) => {
-					return (
-						<View key={index} style={styles.component}>
-							<Text style={styles.logText}>Type: {entry.type}</Text>
-							<Text style={styles.logText}>Name: {entry.name}</Text>
-							<Text style={styles.logText}>Amount: {entry.amount}</Text>
-							<Text style={styles.logText}>
-								Transaction Value: {entry.totalValue}
-							</Text>
-							<Text style={styles.logText}>Date: {entry.date}</Text>
-						</View>
-					);
-				})}
+				{productHistories
+					.slice(0)
+					.reverse()
+					.map((entry, index) => {
+						return (
+							<View key={index} style={styles.component}>
+								<Text style={styles.logText}>Type: {entry.type}</Text>
+								<Text style={styles.logText}>Name: {entry.name}</Text>
+								<Text style={styles.logText}>Amount: {entry.amount}</Text>
+								<Text style={styles.logText}>
+									Transaction Value: {entry.totalValue}
+								</Text>
+								<Text style={styles.logText}>Date: {entry.date}</Text>
+							</View>
+						);
+					})}
 			</View>
 		</ScrollView>
 	);

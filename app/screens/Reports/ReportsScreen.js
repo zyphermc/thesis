@@ -133,7 +133,6 @@ function HomeScreen({ navigation, route }) {
 				},
 			];
 
-			console.log(flatTransactions);
 			//CODE BELOW IS WORKING ON PHONE, BUT NOT ON EMULATOR
 			const ws = XLSX.utils.json_to_sheet(flatTransactions);
 			const wb = XLSX.utils.book_new();

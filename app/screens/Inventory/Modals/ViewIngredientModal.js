@@ -50,6 +50,7 @@ function ViewIngredientModal(props) {
 					let tempPrice = 0;
 
 					buyLogs.map((entry) => {
+						console.log(entry.price);
 						tempPrice += entry.price;
 					});
 

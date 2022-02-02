@@ -11,7 +11,7 @@ import {
 	ImageBackground,
 	Alert,
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+
 import {
 	collection,
 	doc,
@@ -426,7 +426,6 @@ function InventoryScreen({ route }) {
 									: SetIsViewing("Ingredients");
 
 								products.map((item) => {
-									console.log(`${item.product_name} updated ingred version`);
 									CalculateProductMaxQuantity(item);
 								});
 							}}

@@ -34,27 +34,32 @@ function IngredientHistoryModal(props) {
 			</TouchableOpacity>
 
 			<View style={{ marginTop: 5 }}>
-				{ingredientHistories.map((entry, index) => {
-					return (
-						<View key={index} style={styles.component}>
-							<Text style={styles.logText}>Type: {entry.type}</Text>
-							<Text style={styles.logText}>Name: {entry.name}</Text>
-							<Text style={styles.logText}>
-								Amount: {entry.amount}{" "}
-								{props.ingredientData.unit_of_measurement}
-							</Text>
-							{entry.type === "Restock" || entry.type === "Initialized" ? (
-								<View>
-									<Text style={styles.logText}>Price: {entry.price}</Text>
-									<Text style={styles.logText}>Supplier: {entry.supplier}</Text>
-								</View>
-							) : (
-								<></>
-							)}
-							<Text style={styles.logText}>Date: {entry.date}</Text>
-						</View>
-					);
-				})}
+				{ingredientHistories
+					.slice(0)
+					.reverse()
+					.map((entry, index) => {
+						return (
+							<View key={index} style={styles.component}>
+								<Text style={styles.logText}>Type: {entry.type}</Text>
+								<Text style={styles.logText}>Name: {entry.name}</Text>
+								<Text style={styles.logText}>
+									Amount: {entry.amount}{" "}
+									{props.ingredientData.unit_of_measurement}
+								</Text>
+								{entry.type === "Restock" || entry.type === "Initialized" ? (
+									<View>
+										<Text style={styles.logText}>Price: {entry.price}</Text>
+										<Text style={styles.logText}>
+											Supplier: {entry.supplier}
+										</Text>
+									</View>
+								) : (
+									<></>
+								)}
+								<Text style={styles.logText}>Date: {entry.date}</Text>
+							</View>
+						);
+					})}
 			</View>
 		</ScrollView>
 	);

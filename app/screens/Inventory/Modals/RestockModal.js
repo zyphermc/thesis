@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
 	StyleSheet,
 	TextInput,
@@ -11,6 +11,7 @@ import {
 import { doc, increment, updateDoc } from "firebase/firestore";
 import { Formik } from "formik";
 import { db } from "../../../../firebase-config";
+import FlashMessage, { showMessage } from "react-native-flash-message";
 
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -25,13 +26,7 @@ function RestockModal(props) {
 		date: "",
 	};
 
-	useEffect(() => {
-		let isMounted = true;
-
-		return () => {
-			isMounted = false;
-		};
-	}, []);
+	const modalFlashMessage = useRef();
 
 	const getCurrentDate = () => {
 		var date = new Date().getDate();
@@ -130,7 +125,7 @@ function RestockModal(props) {
 								<Text style={styles.infoText}>Supplier:</Text>
 								<TextInput
 									style={styles.input}
-									placeholder="Supplier "
+									placeholder="Supplier"
 									onChangeText={props.handleChange("supplier")}
 								/>
 							</View>
@@ -146,7 +141,18 @@ function RestockModal(props) {
 							</View>
 							<TouchableOpacity
 								onPress={() => {
-									props.handleSubmit();
+									if (
+										props.values.amount > 0 &&
+										props.values.price > 0 &&
+										props.values.supplier != ""
+									) {
+										props.handleSubmit();
+									} else {
+										modalFlashMessage.current.showMessage({
+											message: `Fill up important fields!`,
+											type: "danger",
+										});
+									}
 								}}
 								style={styles.button}
 							>
@@ -158,6 +164,12 @@ function RestockModal(props) {
 					)}
 				</Formik>
 			</View>
+			<FlashMessage
+				ref={modalFlashMessage}
+				position="bottom"
+				floating={true}
+				icon={"auto"}
+			/>
 		</View>
 	);
 }
