@@ -187,7 +187,7 @@ function PosComponent(props) {
 						<Text
 							style={{
 								textDecorationLine:
-									availableQuantityFast <= 0 ? "line-through" : null,
+									availableQuantity <= 0 ? "line-through" : null,
 							}}
 						>
 							{props.name}
@@ -196,7 +196,7 @@ function PosComponent(props) {
 						<Text
 							style={{
 								textDecorationLine:
-									availableQuantitySmallFast <= 0 ? "line-through" : null,
+									availableQuantitySmall <= 0 ? "line-through" : null,
 							}}
 						>
 							{props.name}
@@ -242,19 +242,19 @@ function PosComponent(props) {
 					<Text
 						style={[
 							styles.textStyle,
-							{ color: availableQuantityFast > 0 ? "green" : "red" },
+							{ color: availableQuantity > 0 ? "green" : "red" },
 						]}
 					>
-						{availableQuantityFast > 0 ? "Available" : "Not Available"}
+						{availableQuantity > 0 ? "Available" : "Not Available"}
 					</Text>
 				) : (
 					<Text
 						style={[
 							styles.textStyle,
-							{ color: availableQuantitySmallFast > 0 ? "green" : "red" },
+							{ color: availableQuantitySmall > 0 ? "green" : "red" },
 						]}
 					>
-						{availableQuantitySmallFast > 0 ? "Available" : "Not Available"}
+						{availableQuantitySmall > 0 ? "Available" : "Not Available"}
 					</Text>
 				)}
 			</View>
@@ -287,10 +287,7 @@ function PosComponent(props) {
 					<TouchableOpacity
 						onPress={() => {
 							if (props.category == "Food") {
-								if (
-									availableQuantityFast > 0 &&
-									count < availableQuantityFast
-								) {
+								if (availableQuantity > 0 && count < availableQuantity) {
 									onPressAdd();
 								} else {
 									showMessage({
@@ -301,8 +298,8 @@ function PosComponent(props) {
 							} else {
 								if (selectedSize == "Small") {
 									if (
-										availableQuantitySmallFast > 0 &&
-										count < availableQuantitySmallFast
+										availableQuantitySmall > 0 &&
+										count < availableQuantitySmall
 									) {
 										onPressAdd();
 									} else {
@@ -313,8 +310,8 @@ function PosComponent(props) {
 									}
 								} else if (selectedSize == "Medium") {
 									if (
-										availableQuantityMediumFast > 0 &&
-										count < availableQuantityMediumFast
+										availableQuantityMedium > 0 &&
+										count < availableQuantityMedium
 									) {
 										onPressAdd();
 									} else {
@@ -325,8 +322,8 @@ function PosComponent(props) {
 									}
 								} else if (selectedSize == "Large") {
 									if (
-										availableQuantityLargeFast > 0 &&
-										count < availableQuantityLargeFast
+										availableQuantityLarge > 0 &&
+										count < availableQuantityLarge
 									) {
 										onPressAdd();
 									} else {
@@ -411,7 +408,7 @@ function PosComponent(props) {
 					style={styles.buttonInside}
 					onPress={() => {
 						if (props.category == "Food") {
-							if (availableQuantityFast > 0 && count > 0) {
+							if (availableQuantity > 0 && count > 0) {
 								props.getOrderedProduct(
 									props.name,
 									count,
@@ -430,7 +427,7 @@ function PosComponent(props) {
 								updateUpdater();
 								setCount(0);
 							} else {
-								if (availableQuantityFast > 0 && count <= 0) {
+								if (availableQuantity > 0 && count <= 0) {
 									showMessage({
 										message: "Nothing to add to cart!",
 										type: "warning",
@@ -444,7 +441,7 @@ function PosComponent(props) {
 							}
 						} else {
 							if (selectedSize == "Small") {
-								if (availableQuantitySmallFast > 0 && count > 0) {
+								if (availableQuantitySmall > 0 && count > 0) {
 									props.getOrderedProduct(
 										props.name,
 										count,
@@ -464,7 +461,7 @@ function PosComponent(props) {
 									setCount(0);
 									SetSelectedSize("");
 								} else {
-									if (availableQuantitySmallFast > 0 && count <= 0) {
+									if (availableQuantitySmall > 0 && count <= 0) {
 										showMessage({
 											message: "Nothing to add to cart!",
 											type: "warning",
@@ -477,7 +474,7 @@ function PosComponent(props) {
 									}
 								}
 							} else if (selectedSize == "Medium") {
-								if (availableQuantityMediumFast > 0 && count > 0) {
+								if (availableQuantityMedium > 0 && count > 0) {
 									props.getOrderedProduct(
 										props.name,
 										count,
@@ -497,7 +494,7 @@ function PosComponent(props) {
 									setCount(0);
 									SetSelectedSize("");
 								} else {
-									if (availableQuantityMediumFast > 0 && count <= 0) {
+									if (availableQuantityMedium > 0 && count <= 0) {
 										showMessage({
 											message: "Nothing to add to cart!",
 											type: "warning",
@@ -510,7 +507,7 @@ function PosComponent(props) {
 									}
 								}
 							} else if (selectedSize == "Large") {
-								if (availableQuantityLargeFast > 0 && count > 0) {
+								if (availableQuantityLarge > 0 && count > 0) {
 									props.getOrderedProduct(
 										props.name,
 										count,
@@ -530,7 +527,7 @@ function PosComponent(props) {
 									setCount(0);
 									SetSelectedSize("");
 								} else {
-									if (availableQuantityLargeFast > 0 && count <= 0) {
+									if (availableQuantityLarge > 0 && count <= 0) {
 										showMessage({
 											message: "Nothing to add to cart!",
 											type: "warning",
