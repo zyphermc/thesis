@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
 	StyleSheet,
 	TextInput,
@@ -11,7 +11,7 @@ import {
 import { Formik } from "formik";
 import { doc, collection, getDocs, setDoc } from "firebase/firestore";
 import { db } from "../../../../firebase-config";
-import { showMessage } from "react-native-flash-message";
+import FlashMessage, { showMessage } from "react-native-flash-message";
 
 //Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -20,6 +20,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { Picker } from "@react-native-picker/picker";
 
 function AddProductForm(props) {
+	const modalFlashMessage = useRef();
 	const measurements = ["grams", "mL", "pcs"];
 	const [ingredientsNames, SetIngredientNames] = useState([]);
 
@@ -164,6 +165,55 @@ function AddProductForm(props) {
 			message: `Successfully added ${data.name}`,
 			type: "success",
 		});
+	};
+
+	const validate = (values) => {
+		if (values.category) {
+			if (values.category == "Food") {
+				if (
+					!values.name ||
+					!values.description ||
+					!values.price ||
+					!values.vatPercent ||
+					!values.imageURI ||
+					!values.foodRecipe
+				) {
+					return false;
+				} else {
+					const letters = /^[a-zA-Z\s]*$/;
+
+					return letters.test(values.name) &&
+						!isNaN(values.price) &&
+						!isNaN(values.vatPercent)
+						? true
+						: false;
+				}
+			} else {
+				if (
+					!values.name ||
+					!values.description ||
+					!values.selling_prices ||
+					!values.vatPercent ||
+					!values.imageURI ||
+					!values.drinkRecipe
+				) {
+					return false;
+				} else {
+					const letters = /^[a-zA-Z\s]*$/;
+
+					return letters.test(values.name) &&
+						values.selling_prices.map((price) => {
+							console.log(!isNaN(price.selling_price));
+							return !isNaN(price.selling_price);
+						}) &&
+						!isNaN(values.vatPercent)
+						? true
+						: false;
+				}
+			}
+		} else {
+			return false;
+		}
 	};
 
 	return (
@@ -535,7 +585,18 @@ function AddProductForm(props) {
 							</View>
 							<TouchableOpacity
 								onPress={() => {
-									props.handleSubmit();
+									if (validate(props.values)) {
+										props.handleSubmit();
+										modalFlashMessage.current.showMessage({
+											message: `Successfully added item!`,
+											type: "success",
+										});
+									} else {
+										modalFlashMessage.current.showMessage({
+											message: `Wrong input details!`,
+											type: "danger",
+										});
+									}
 								}}
 								style={styles.button}
 							>
@@ -545,6 +606,12 @@ function AddProductForm(props) {
 					)}
 				</Formik>
 			</ScrollView>
+			<FlashMessage
+				ref={modalFlashMessage}
+				position="bottom"
+				floating={true}
+				icon={"auto"}
+			/>
 		</View>
 	);
 }

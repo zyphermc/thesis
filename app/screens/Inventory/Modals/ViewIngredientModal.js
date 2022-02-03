@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
 	Text,
 	View,
@@ -25,11 +25,16 @@ import { db } from "../../../../firebase-config";
 import RestockModal from "./RestockModal";
 import IngredientHistoryModal from "./IngredientHistoryModal";
 
+//Flash message
+import FlashMessage, { showMessage } from "react-native-flash-message";
+
 function ViewIngredientModal(props) {
 	const [ingredientData, SetIngredientData] = useState([]);
 	const [isEditable, SetIsEditable] = useState(false);
 	const [restockModalOpen, SetRestockModalOpen] = useState(false);
 	const [historyModalOpen, SetHistoryModalOpen] = useState(false);
+
+	const modalFlashMessage = useRef();
 
 	useEffect(() => {
 		let isMounted = true;
@@ -50,7 +55,6 @@ function ViewIngredientModal(props) {
 					let tempPrice = 0;
 
 					buyLogs.map((entry) => {
-						console.log(entry.price);
 						tempPrice += entry.price;
 					});
 
@@ -108,6 +112,37 @@ function ViewIngredientModal(props) {
 
 	const CloseHistoryModal = () => {
 		SetHistoryModalOpen(false);
+	};
+
+	const validate = (values) => {
+		if (
+			!values.name ||
+			!values.quantity ||
+			!values.category ||
+			!values.unitOfMeasurement ||
+			!values.imageURI ||
+			!values.safetyStock ||
+			!values.demandDuringLead ||
+			!values.annualDemand ||
+			!values.annualHoldingCost ||
+			!values.annualOrderCost
+		) {
+			return false;
+		} else {
+			const letters = /^[a-zA-Z\s]*$/;
+
+			return letters.test(values.name) &&
+				letters.test(values.category) &&
+				letters.test(values.unitOfMeasurement) &&
+				!isNaN(values.quantity) &&
+				!isNaN(values.safetyStock) &&
+				!isNaN(values.demandDuringLead) &&
+				!isNaN(values.annualDemand) &&
+				!isNaN(values.annualHoldingCost) &&
+				!isNaN(values.annualOrderCost)
+				? true
+				: false;
+		}
 	};
 
 	function FormComponent(props) {
@@ -322,7 +357,18 @@ function ViewIngredientModal(props) {
 									</View>
 									<TouchableOpacity
 										onPress={() => {
-											props.handleSubmit();
+											if (validate(props.values)) {
+												props.handleSubmit();
+												modalFlashMessage.current.showMessage({
+													message: `Successfully updated item!`,
+													type: "success",
+												});
+											} else {
+												modalFlashMessage.current.showMessage({
+													message: `Wrong input details!`,
+													type: "danger",
+												});
+											}
 										}}
 										style={styles.button}
 									>
@@ -334,6 +380,12 @@ function ViewIngredientModal(props) {
 							)}
 						</Formik>
 					</ScrollView>
+					<FlashMessage
+						ref={modalFlashMessage}
+						position="bottom"
+						floating={true}
+						icon={"auto"}
+					/>
 				</View>
 			);
 		} else {

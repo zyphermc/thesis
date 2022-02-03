@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
 	Text,
 	View,
@@ -33,12 +33,17 @@ import { db } from "../../../../firebase-config";
 //Modals
 import ProductHistoryModal from "./ProductHistoryModal";
 
+//Flash message
+import FlashMessage, { showMessage } from "react-native-flash-message";
+
 function ViewProductModal(props) {
 	const [productData, SetProductData] = useState([]);
 	const [isEditable, SetIsEditable] = useState(false);
 	const [historyModalOpen, SetHistoryModalOpen] = useState(false);
 	const [ingredientsNames, SetIngredientNames] = useState([]);
 	const measurements = ["grams", "mL"];
+
+	const modalFlashMessage = useRef();
 
 	useEffect(async () => {
 		let isMounted = true;
@@ -119,6 +124,51 @@ function ViewProductModal(props) {
 
 	const CloseHistoryModal = () => {
 		SetHistoryModalOpen(false);
+	};
+
+	const validate = (values) => {
+		if (values.category == "Food") {
+			if (
+				!values.name ||
+				!values.description ||
+				!values.price ||
+				!values.vatPercent ||
+				!values.imageURI ||
+				!values.recipe
+			) {
+				return false;
+			} else {
+				const letters = /^[a-zA-Z\s]*$/;
+
+				return letters.test(values.name) &&
+					!isNaN(values.price) &&
+					!isNaN(values.vatPercent)
+					? true
+					: false;
+			}
+		} else {
+			if (
+				!values.name ||
+				!values.description ||
+				!values.selling_prices ||
+				!values.vatPercent ||
+				!values.imageURI ||
+				!values.recipe
+			) {
+				return false;
+			} else {
+				const letters = /^[a-zA-Z\s]*$/;
+
+				return letters.test(values.name) &&
+					values.selling_prices.map((price) => {
+						console.log(!isNaN(price.selling_price));
+						return !isNaN(price.selling_price);
+					}) &&
+					!isNaN(values.vatPercent)
+					? true
+					: false;
+			}
+		}
 	};
 
 	function FormComponent(props) {
@@ -511,7 +561,18 @@ function ViewProductModal(props) {
 
 								<TouchableOpacity
 									onPress={() => {
-										props.handleSubmit();
+										if (validate(props.values)) {
+											props.handleSubmit();
+											modalFlashMessage.current.showMessage({
+												message: `Successfully updated item!`,
+												type: "success",
+											});
+										} else {
+											modalFlashMessage.current.showMessage({
+												message: `Wrong input details!`,
+												type: "danger",
+											});
+										}
 									}}
 									style={styles.button}
 								>
@@ -522,6 +583,12 @@ function ViewProductModal(props) {
 							</View>
 						)}
 					</Formik>
+					<FlashMessage
+						ref={modalFlashMessage}
+						position="bottom"
+						floating={true}
+						icon={"auto"}
+					/>
 				</ScrollView>
 			);
 		} else {

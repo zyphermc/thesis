@@ -26,6 +26,8 @@ import { db } from "../../../firebase-config";
 
 import CartComponent from "../../components/CartComponent";
 
+import { showMessage } from "react-native-flash-message";
+
 LogBox.ignoreLogs([
 	"Non-serializable values were found in the navigation state",
 ]);
@@ -434,9 +436,15 @@ function Cart(props, route) {
 								SetOrderProductList([]);
 							} else {
 								if (totalValue > 0) {
-									Alert.alert("Not enough cash!");
+									showMessage({
+										message: `Not enough cash!`,
+										type: "danger",
+									});
 								} else {
-									Alert.alert("No products in cart!");
+									showMessage({
+										message: `No products in cart!`,
+										type: "danger",
+									});
 								}
 							}
 						}}

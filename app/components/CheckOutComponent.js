@@ -1,14 +1,5 @@
 import React from "react";
-import {
-	Text,
-	View,
-	StyleSheet,
-	Image,
-	TouchableOpacity,
-	Button,
-	Alert,
-} from "react-native";
-import Ionicons from "react-native-vector-icons/Ionicons";
+import { Text, View, StyleSheet } from "react-native";
 
 function CheckOutComponent(props) {
 	const { name, imageURI, quantity, sellingPrice, vat, size } = props;

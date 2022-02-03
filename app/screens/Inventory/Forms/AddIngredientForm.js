@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
 	StyleSheet,
 	TextInput,
@@ -9,12 +9,13 @@ import {
 import { Formik } from "formik";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../../../firebase-config";
-import { showMessage } from "react-native-flash-message";
+import FlashMessage, { showMessage } from "react-native-flash-message";
 
 //Dropdown Menu
 import { Picker } from "@react-native-picker/picker";
 
 function AddIngredientForm(props) {
+	const modalFlashMessage = useRef();
 	const initialValues = {
 		name: "",
 		category: "",
@@ -93,6 +94,37 @@ function AddIngredientForm(props) {
 			message: `Successfully added ${data.name}`,
 			type: "success",
 		});
+	};
+
+	const validate = (values) => {
+		if (
+			!values.name ||
+			!values.quantity ||
+			!values.category ||
+			!values.unitOfMeasurement ||
+			!values.imageURI ||
+			!values.safetyStock ||
+			!values.demandDuringLead ||
+			!values.annualDemand ||
+			!values.annualHoldingCost ||
+			!values.annualOrderCost
+		) {
+			return false;
+		} else {
+			const letters = /^[a-zA-Z\s]*$/;
+
+			return letters.test(values.name) &&
+				letters.test(values.category) &&
+				letters.test(values.unitOfMeasurement) &&
+				!isNaN(values.quantity) &&
+				!isNaN(values.safetyStock) &&
+				!isNaN(values.demandDuringLead) &&
+				!isNaN(values.annualDemand) &&
+				!isNaN(values.annualHoldingCost) &&
+				!isNaN(values.annualOrderCost)
+				? true
+				: false;
+		}
 	};
 
 	return (
@@ -193,7 +225,18 @@ function AddIngredientForm(props) {
 
 						<TouchableOpacity
 							onPress={() => {
-								props.handleSubmit();
+								if (validate(props.values)) {
+									props.handleSubmit();
+									modalFlashMessage.current.showMessage({
+										message: `Successfully added item!`,
+										type: "success",
+									});
+								} else {
+									modalFlashMessage.current.showMessage({
+										message: `Wrong input details!`,
+										type: "danger",
+									});
+								}
 							}}
 							style={styles.button}
 						>
@@ -202,6 +245,12 @@ function AddIngredientForm(props) {
 					</View>
 				)}
 			</Formik>
+			<FlashMessage
+				ref={modalFlashMessage}
+				position="bottom"
+				floating={true}
+				icon={"auto"}
+			/>
 		</View>
 	);
 }

@@ -5,8 +5,6 @@ import {
 	StyleSheet,
 	Image,
 	TouchableOpacity,
-	Button,
-	Alert,
 	DeviceEventEmitter,
 } from "react-native";
 import { showMessage } from "react-native-flash-message";

@@ -45,26 +45,6 @@ function CheckOut(props) {
 						justifyContent: "center",
 					}}
 				>
-					{/* <TouchableOpacity
-						style={{
-							position: "absolute",
-							height: 30,
-							width: 100,
-							top: 10,
-							right: 5,
-							borderWidth: 1,
-							alignItems: "center",
-							justifyContent: "center",
-						}}
-						onPress={() => {
-							Alert.alert(
-								"No bluetooth printer connected!",
-								"Please plug or connect a bluetooth printer to use this feature."
-							);
-						}}
-					>
-						<Text>Print Receipt</Text>
-					</TouchableOpacity> */}
 					<TouchableOpacity
 						style={{
 							height: 50,
